@@ -1,0 +1,75 @@
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow the workflow to deploy to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One concurrent deployment; cancel superseded runs.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  # Project page is served under /<repo-name>/ on GitHub Pages.
+  VITE_BASE_PATH: /zlv-test-feature-verif/
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Provision DSFR static assets
+        run: yarn workspace @zerologementvacant/front exec copy-dsfr-to-public
+
+      - name: Generate DSFR icons
+        run: yarn workspace @zerologementvacant/front exec react-dsfr update-icons
+
+      - name: Build workspace packages
+        run: >-
+          yarn nx run-many -t build
+          --projects=@zerologementvacant/models,@zerologementvacant/schemas,@zerologementvacant/utils,@zerologementvacant/pdf
+          --skip-nx-cache
+
+      - name: Build frontend (demo)
+        run: yarn nx build frontend --skip-nx-cache
+
+      - name: SPA fallback + disable Jekyll
+        run: |
+          cp frontend/dist/index.html frontend/dist/404.html
+          touch frontend/dist/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

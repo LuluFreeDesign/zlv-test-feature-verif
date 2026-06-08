@@ -1,0 +1,17 @@
+{
+  "extends": ["@tsconfig/vite-react/tsconfig.json", "../tsconfig.base.json"],
+  "files": [],
+  "include": [],
+  "compilerOptions": {
+    "noEmit": false,
+    "allowImportingTsExtensions": false
+  },
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
+}

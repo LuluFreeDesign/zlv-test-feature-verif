@@ -1,0 +1,208 @@
+import { fr } from '@codegouvfr/react-dsfr';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { getOwnerDisplayName } from '@zerologementvacant/models';
+import schemas from '@zerologementvacant/schemas';
+import { Controller, useFormContext } from 'react-hook-form';
+import { number, object, string, type InferType } from 'yup';
+
+import AppTextInputNext from '~/components/_app/AppTextInput/AppTextInputNext';
+import OwnerAddressEditionNext from '~/components/Owner/OwnerAddressEditionNext';
+import Icon from '~/components/ui/Icon';
+import type { Owner } from '~/models/Owner';
+
+export const OWNER_FORM_FIELD_SCHEMA = object({
+  birthDate: string()
+    .defined()
+    .nullable()
+    .test(
+      'birth-date-required',
+      'Veuillez renseigner une date de naissance.',
+      (value) => Boolean(value)
+    ),
+  banAddress: object({
+    id: string().required(),
+    label: string().required(),
+    score: number().required().min(0).max(1),
+    longitude: number().min(-180).max(180).required(),
+    latitude: number().min(-90).max(90).required(),
+    postalCode: string().defined().nullable(),
+    city: string().defined().nullable(),
+    street: string().defined().nullable(),
+    houseNumber: string().defined().nullable()
+  })
+    .defined()
+    .nullable(),
+  additionalAddress: string().defined().nullable(),
+  email: string()
+    .email('Email invalide. Exemple de format valide : exemple@gmail.com')
+    .defined()
+    .nullable(),
+  phone: schemas.phone.defined().nullable()
+});
+
+export type OwnerFormFieldsSchema = InferType<typeof OWNER_FORM_FIELD_SCHEMA>;
+
+export interface OwnerFormFieldsProps {
+  owner: Owner;
+}
+
+function OwnerFormFields(props: OwnerFormFieldsProps) {
+  const form = useFormContext<OwnerFormFieldsSchema>();
+
+  return (
+    <Stack spacing="1.5rem">
+      <Stack>
+        <Typography>
+          {props.owner.kind === 'Particulier' ? 'Nom et prénom' : 'Désignation'}
+        </Typography>
+        <Typography
+          sx={{
+            color: fr.colors.decisions.text.mention.grey.default,
+            fontWeight: 500
+          }}
+        >
+          {getOwnerDisplayName(props.owner)}
+        </Typography>
+      </Stack>
+
+      <AppTextInputNext<OwnerFormFieldsSchema, 'birthDate'>
+        name="birthDate"
+        label="Date de naissance (obligatoire)"
+        hintText="Format attendu : jj/mm/aaaa"
+        nativeInputProps={{
+          type: 'date',
+          max: new Date().toISOString().substring(0, 'yyyy-mm-dd'.length),
+          autoComplete: 'bday',
+          'aria-required': 'true'
+        }}
+        mapValue={(value) => value ?? ''}
+        contramapValue={(value) => value || null}
+      />
+
+      <Stack component="section">
+        <Stack direction="row" spacing="0.25rem" sx={{ alignItems: 'center' }}>
+          <Icon name="fr-icon-bank-line" size="sm" />
+          <Typography color={fr.colors.decisions.text.active.grey.default}>
+            Adresse fiscale (source: DGFIP)
+          </Typography>
+        </Stack>
+        <Typography className="fr-hint-text">
+          Adresse issue des fichiers LOVAC (non modifiable).
+        </Typography>
+        <Typography
+          color={fr.colors.decisions.text.mention.grey.default}
+          sx={{ mt: '0.25rem', fontWeight: 500 }}
+        >
+          {props.owner.rawAddress
+            ? props.owner.rawAddress.join(' ')
+            : 'Inconnue'}
+        </Typography>
+      </Stack>
+
+      <Stack component="section">
+        <Stack direction="row" spacing="0.25rem" sx={{ alignItems: 'center' }}>
+          <Icon name="fr-icon-home-4-line" size="sm" />
+          <Typography color={fr.colors.decisions.text.active.grey.default}>
+            Adresse postale (obligatoire) — source: Base Adresse Nationale
+          </Typography>
+        </Stack>
+        <a
+          className={fr.cx('fr-link--sm')}
+          href="https://zerologementvacant.crisp.help/fr/article/comment-choisir-entre-ladresse-ban-et-ladresse-lovac-1ivvuep/?bust=1705403706774"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Je ne trouve pas l&apos;adresse dans la liste
+        </a>
+        <Controller
+          control={form.control}
+          name="banAddress"
+          render={({ field, fieldState }) => (
+            <OwnerAddressEditionNext
+              disabled={field.disabled}
+              error={fieldState.error?.message}
+              address={
+                field.value
+                  ? {
+                      banId: field.value.id,
+                      label: field.value.label,
+                      score: field.value.score,
+                      longitude: field.value.longitude,
+                      latitude: field.value.latitude,
+                      postalCode: field.value.postalCode ?? '',
+                      city: field.value.city ?? '',
+                      street: field.value.street ?? undefined,
+                      houseNumber: field.value.houseNumber ?? undefined
+                    }
+                  : null
+              }
+              onChange={(address) => {
+                field.onChange(
+                  address &&
+                    address.banId &&
+                    address.latitude &&
+                    address.longitude &&
+                    address.score
+                    ? ({
+                        id: address.banId,
+                        label: address.label,
+                        score: address.score,
+                        longitude: address.longitude,
+                        latitude: address.latitude,
+                        postalCode: address.postalCode ?? null,
+                        city: address.city ?? null,
+                        street: address.street ?? null,
+                        houseNumber: address.houseNumber ?? null
+                      } satisfies OwnerFormFieldsSchema['banAddress'])
+                    : null
+                );
+              }}
+            />
+          )}
+        />
+      </Stack>
+
+      <Stack component="section">
+        <AppTextInputNext<OwnerFormFieldsSchema, 'additionalAddress'>
+          name="additionalAddress"
+          label="Complément d'adresse"
+          mapValue={(value): string => value ?? ''}
+          contramapValue={(value): string | null => value || null}
+        />
+      </Stack>
+
+      <Grid container component="section" columnSpacing="1rem">
+        <Grid size={{ xs: 12, md: 6 }}>
+          <AppTextInputNext<OwnerFormFieldsSchema, 'email'>
+            name="email"
+            label="Adresse e-mail"
+            hintText="Format attendu : prenom.nom@domaine.fr"
+            nativeInputProps={{
+              type: 'email',
+              autoComplete: 'email'
+            }}
+            mapValue={(value) => value ?? ''}
+            contramapValue={(value) => value || null}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <AppTextInputNext<OwnerFormFieldsSchema, 'phone'>
+            name="phone"
+            label="Numéro de téléphone"
+            hintText="Format attendu : 0123456789 ou +33123456789"
+            nativeInputProps={{
+              type: 'tel',
+              autoComplete: 'tel'
+            }}
+            mapValue={(value) => value ?? ''}
+            contramapValue={(value) => value || null}
+          />
+        </Grid>
+      </Grid>
+    </Stack>
+  );
+}
+
+export default OwnerFormFields;

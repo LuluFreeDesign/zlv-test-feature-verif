@@ -1,0 +1,27 @@
+import { fr } from '@codegouvfr/react-dsfr';
+import Grid from '@mui/material/Grid';
+import { Navigate, Route, Routes } from 'react-router';
+
+import AccountEmailCreationView from './AccountCreation/AccountEmailCreationView';
+import AccountEmailActivationView from './AccountCreation/AccountEmailActivationView';
+import AccountPasswordCreationView from './AccountCreation/AccountPasswordCreationView';
+import AccountAccessForbiddenView from './AccountCreation/AccountAccessForbiddenView';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+
+function AccountCreationView() {
+  useDocumentTitle('Créer un compte');
+
+  return (
+    <Grid className={fr.cx('fr-container', 'fr-py-4w')} component="main">
+      <Routes>
+        <Route path="email" element={<AccountEmailCreationView />} />
+        <Route path="activation" element={<AccountEmailActivationView />} />
+        <Route path="impossible" element={<AccountAccessForbiddenView />} />
+        <Route path="mot-de-passe" element={<AccountPasswordCreationView />} />
+        <Route path="*" element={<Navigate replace to="../email" />} />
+      </Routes>
+    </Grid>
+  );
+}
+
+export default AccountCreationView;

@@ -1,0 +1,39 @@
+import { fr } from '@codegouvfr/react-dsfr/fr';
+import { HousingStatus } from '@zerologementvacant/models';
+import { Array } from 'effect';
+import type { NonEmptyArray } from 'ts-essentials';
+
+const hex = fr.colors.getHex({ isDark: false });
+const statuses = [
+  HousingStatus.WAITING,
+  HousingStatus.FIRST_CONTACT,
+  HousingStatus.IN_PROGRESS,
+  HousingStatus.COMPLETED,
+  HousingStatus.BLOCKED
+];
+const backgroundColors = Array.zip(statuses, [
+  hex.decisions.background.contrast.yellowTournesol.default,
+  hex.decisions.background.contrast.blueCumulus.default,
+  hex.decisions.background.contrast.orangeTerreBattue.default,
+  hex.decisions.background.contrast.greenBourgeon.default,
+  hex.decisions.background.contrast.purpleGlycine.default
+]) as NonEmptyArray<[HousingStatus, string]>;
+const borderColors = Array.zip(statuses, [
+  hex.decisions.text.label.yellowTournesol.default,
+  hex.decisions.text.label.blueCumulus.default,
+  hex.decisions.text.label.orangeTerreBattue.default,
+  hex.decisions.text.label.greenBourgeon.default,
+  hex.decisions.text.label.purpleGlycine.default
+]) as NonEmptyArray<[HousingStatus, string]>;
+const defaultBackgroundColor =
+  hex.decisions.background.actionHigh.blueFrance.default;
+const defaultBorderColor = hex.decisions.text.inverted.grey.default;
+
+const statusColors = {
+  defaultBackgroundColor,
+  defaultBorderColor,
+  backgroundColors,
+  borderColors
+};
+
+export default statusColors;

@@ -1,0 +1,28 @@
+.linkList {
+  height: 84px;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+.link {
+  align-content: center;
+}
+
+.loading {
+  position: fixed;
+  top: 0;
+  background-color: var(--blue-france-113);
+  height: 2px;
+  z-index: 1000;
+}
+
+.icon::before {
+  --icon-size: 1.25rem;
+  margin-right: 0.5rem;
+  position: relative;
+  top: -2px;
+}
+
+.mainNavigationItem {
+  margin-left: 0px !important;
+}

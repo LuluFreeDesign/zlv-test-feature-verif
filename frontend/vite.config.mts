@@ -1,0 +1,110 @@
+/// <reference types='vitest' />
+import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import react from '@vitejs/plugin-react';
+import os from 'node:os';
+import path from 'node:path';
+import { defineConfig, loadEnv } from 'vite';
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd());
+
+  const port = Number(env.VITE_PORT) ?? 3000;
+
+  // Base path for deployment (e.g. '/zlv-test-feature-verif/' on GitHub Pages).
+  // Read from process.env first (CI sets it there; `loadEnv` only reads .env files).
+  const base = process.env.VITE_BASE_PATH || env.VITE_BASE_PATH || '/';
+
+  // The MSW mock layer imports a few Node-only modules ('node:http2' / 'http2'
+  // for HTTP status constants, and 'jsonwebtoken'). They cannot be bundled for
+  // the browser, so in non-test builds we alias them to lightweight browser
+  // shims. In tests the real Node modules are used.
+  const isVitest = process.env.VITEST === 'true' || mode === 'test';
+  const browserShims = isVitest
+    ? []
+    : [
+        {
+          find: /^node:http2$/,
+          replacement: path.resolve(
+            import.meta.dirname,
+            'src/mocks/shims/http2.ts'
+          )
+        },
+        {
+          find: /^http2$/,
+          replacement: path.resolve(
+            import.meta.dirname,
+            'src/mocks/shims/http2.ts'
+          )
+        },
+        {
+          find: /^jsonwebtoken$/,
+          replacement: path.resolve(
+            import.meta.dirname,
+            'src/mocks/shims/jsonwebtoken.ts'
+          )
+        }
+      ];
+
+  return {
+    root: import.meta.dirname,
+    base,
+    cacheDir: '../node_modules/.vite/frontend',
+    resolve: {
+      alias: browserShims
+    },
+    server: {
+      port: port,
+      host: 'localhost',
+      strictPort: true
+    },
+    preview: {
+      port: port,
+      host: 'localhost',
+      strictPort: true
+    },
+    plugins: [react(), nxViteTsPaths()],
+    // Uncomment this if you are using workers.
+    // worker: {
+    //  plugins: [],
+    // },
+    build: {
+      outDir: './dist',
+      emptyOutDir: true,
+      reportCompressedSize: true,
+      // Vite 8 switched to lightningcss for CSS minification by default,
+      // but it rejects unquoted SVG data URIs present in @codegouvfr/react-dsfr.
+      // Switch back to esbuild until DSFR ships quoted URIs.
+      cssMinify: 'esbuild',
+      commonjsOptions: {
+        transformMixedEsModules: true
+      },
+      rollupOptions: {
+        external: [
+          /node_modules\/(?!@codegouvfr)\/react-dsfr\/.+\\.js$/,
+          /node_modules\/\.store\/(?!@codegouvfr-react-dsfr-npm-[^/]+)\/package\/.*\.js$/,
+          // fetch-intercept/lib/browser.js has a dead-code path that requires
+          // whatwg-fetch as a polyfill fallback; the package is not installed
+          // because modern browsers have native fetch. Rolldown (Vite 8) is
+          // stricter than Rollup and treats the unresolved import as an error,
+          // so we mark it as external to keep the same runtime behaviour.
+          'whatwg-fetch'
+        ]
+      }
+    },
+    test: {
+      watch: false,
+      globals: true,
+      environment: 'happy-dom',
+      execArgv: [
+        '--localstorage-file',
+        path.resolve(os.tmpdir(), `vitest-${process.pid}.localstorage`)
+      ],
+      env: {
+        TZ: 'UTC'
+      },
+      include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+      testTimeout: 30_000,
+      setupFiles: ['./vitest.setup.ts', './vitest.polyfills.js']
+    }
+  };
+});

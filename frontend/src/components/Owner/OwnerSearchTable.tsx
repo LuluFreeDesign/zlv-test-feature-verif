@@ -1,0 +1,118 @@
+import Button from '@codegouvfr/react-dsfr/Button';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import {
+  createColumnHelper,
+  type PaginationState
+} from '@tanstack/react-table';
+import { useMemo } from 'react';
+import { getOwnerDisplayName } from '@zerologementvacant/models';
+
+import AdvancedTable, {
+  type AdvancedTableProps
+} from '~/components/AdvancedTable/AdvancedTable';
+import LabelNext from '~/components/Label/LabelNext';
+import OwnerKindTag from '~/components/Owner/OwnerKindTag';
+import type { Owner } from '~/models/Owner';
+import { birthdate } from '~/utils/dateUtils';
+
+export type OwnerSearchTableProps = {
+  owners: ReadonlyArray<Owner>;
+  /**
+   * The total number of owners available (for pagination purposes).
+   */
+  total: number;
+  isLoading?: boolean;
+  pagination?: PaginationState;
+  onPaginationChange?: AdvancedTableProps<Owner>['onPaginationChange'];
+  onSelect?(owner: Owner): void;
+};
+
+function OwnerSearchTable(props: OwnerSearchTableProps) {
+  const { onSelect } = props;
+
+  const columnHelper = createColumnHelper<Owner>();
+  const columnDefs = useMemo(
+    () => [
+      columnHelper.display({
+        id: 'name',
+        header: 'Propriétaires (nom, date de naissance et adresse)',
+        cell: ({ row }) => (
+          <Stack spacing="0.5rem" useFlexGap>
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+              {getOwnerDisplayName(row.original)}
+            </Typography>
+
+            {row.original.birthDate ? (
+              <Typography variant="body2">
+                {birthdate(row.original.birthDate)}
+              </Typography>
+            ) : null}
+
+            <Typography variant="body2">{row.original.rawAddress}</Typography>
+
+            <OwnerKindTag value={row.original.kind} />
+          </Stack>
+        )
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: () => (
+          <Typography variant="body2" sx={{ textAlign: 'end' }}>
+            Actions
+          </Typography>
+        ),
+        cell: ({ row }) => (
+          <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
+            <Button
+              priority="secondary"
+              size="small"
+              title={`Sélectionner ${getOwnerDisplayName(row.original)}`}
+              nativeButtonProps={{
+                'aria-label': `Sélectionner ${getOwnerDisplayName(row.original)}`
+              }}
+              onClick={() => {
+                onSelect?.(row.original);
+              }}
+            >
+              Sélectionner
+            </Button>
+          </Stack>
+        )
+      })
+    ],
+    [columnHelper, onSelect]
+  );
+
+  if (props.owners.length === 0 && !props.isLoading) {
+    return <Typography>Aucun propriétaire trouvé.</Typography>;
+  }
+
+  return (
+    <Stack spacing="1rem">
+      <LabelNext style={{ fontWeight: 400 }}>
+        {props.total} propriétaires trouvés
+      </LabelNext>
+      <AdvancedTable
+        data={props.owners as Array<Owner>}
+        columns={columnDefs}
+        isLoading={props.isLoading}
+        paginate
+        manualPagination
+        pageCount={
+          props.pagination
+            ? Math.ceil(props.total / props.pagination.pageSize)
+            : undefined
+        }
+        state={props.pagination ? { pagination: props.pagination } : undefined}
+        onPaginationChange={props.onPaginationChange}
+        tableProps={{
+          className: 'fr-my-0',
+          noCaption: true
+        }}
+      />
+    </Stack>
+  );
+}
+
+export default OwnerSearchTable;

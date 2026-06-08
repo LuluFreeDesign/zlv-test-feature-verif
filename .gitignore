@@ -1,0 +1,90 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+node_modules
+
+# Env
+.env
+.env.*
+!.env.example
+# Demo environment: the frontend .env is public, non-secret config and must be
+# committed so GitHub Pages / clones boot in demo mode.
+!frontend/.env
+
+# Build
+build
+coverage
+dist
+frontend/public/dsfr
+*.tsbuildinfo
+.eslintcache
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+lerna-debug.log
+
+# Misc
+.DS_Store
+
+.idea/
+
+/talisman_report
+.clever.json
+
+# Data Stack
+.pyc
+__pycache__
+analytics/dagster/storage/
+.duckdb
+.jsonl
+analytics/*.duckdb
+analytics/dbt/*.duckdb
+analytics/exploration/data/*
+exploration/data/*
+data/
+data/*
+analytics/plugins/
+analytics/explorations/
+
+# DPE Import - Large data files
+server/src/scripts/import-dpe/dpe_processing_*/
+server/src/scripts/import-dpe/dpe_output_*/
+*.dump
+tools/*.dump
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+.nx/cache
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+
+# Claude and others
+*.local.json
+test-output
+
+.nx/polygraph
+.claude/worktrees
+
+# refactor-tracker local state
+.refactor-tracker-cache.json
+.tech-refactors.yml
+# bundle metrics snapshots
+bundle-metrics.*.json

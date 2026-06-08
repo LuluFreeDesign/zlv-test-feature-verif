@@ -1,0 +1,93 @@
+import { Upload } from '@codegouvfr/react-dsfr/Upload';
+import { Alert } from '@codegouvfr/react-dsfr/Alert';
+import Grid from '@mui/material/Grid';
+import { useState } from 'react';
+import * as yup from 'yup';
+
+import { fileValidator, useForm } from '~/hooks/useForm';
+import { createConfirmationModal } from '~/components/modals/ConfirmationModal/ConfirmationModalNext';
+import styles from './geo-perimeter-uploading-modal.module.scss';
+
+export interface GeoPerimeterUploadingModalProps {
+  onClose(): void;
+  onSubmit(file: File): void;
+  error?: string;
+  isLoading?: boolean;
+}
+
+function createPerimeterUploadModal() {
+  const modal = createConfirmationModal({
+    id: 'perimeter-upload-modal',
+    isOpenedByDefault: false
+  });
+
+  return {
+    ...modal,
+    Component(props: GeoPerimeterUploadingModalProps) {
+      const { onClose, onSubmit, ...rest } = props;
+      const FileTypes = ['application/zip', 'application/x-zip-compressed'];
+      const [file, setFile] = useState<File | undefined>();
+
+      const schema = yup.object().shape({ file: fileValidator(FileTypes).default(undefined) }).required();
+
+      const { isValid, message, validate } = useForm(schema as any, {
+        file
+      });
+
+      const selectFile = (event: any) => {
+        setFile(event.target?.files?.[0]);
+      };
+
+      const submitFile = () => {
+        validate().then(() => {
+          if (isValid()) {
+            onSubmit(file!);
+          }
+        });
+      };
+
+      // Check if error is file_too_large to display it differently
+      const isFileTooLarge = props.error?.includes('trop volumineux');
+      const shouldShowAlert = !!props.error && !isFileTooLarge;
+
+      return (
+        <modal.Component
+          size="large"
+          title="Déposer un périmètre"
+          onClose={onClose}
+          onSubmit={submitFile}
+          {...rest}
+        >
+          <Grid container spacing={2}>
+            {shouldShowAlert && props.error && (
+              <Grid size={12}>
+                <Alert
+                  severity="error"
+                  description={props.error}
+                  closable={false}
+                  small
+                />
+              </Grid>
+            )}
+            <Grid size={12}>
+              <Upload
+                nativeInputProps={{
+                  onChange: (event: any) => selectFile(event),
+                  accept: '.zip,application/zip,application/x-zip-compressed'
+                }}
+                multiple={false}
+                label="Ajouter un fichier"
+                hint="Format : fichier géographique (SIG) au format .zip comprenant l'ensemble des extensions qui constituent le fichier (.cpg, .dbf, .shp, etc.)."
+                state={isFileTooLarge ? 'error' : 'default'}
+                stateRelatedMessage={isFileTooLarge ? props.error : message('file')}
+                className={styles.upload}
+              />
+            </Grid>
+          </Grid>
+        </modal.Component>
+      );
+    }
+  };
+}
+
+export default createPerimeterUploadModal;

@@ -1,0 +1,32 @@
+{
+  "name": "@zerologementvacant/models",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/lib/index.d.ts",
+      "default": "./dist/lib/index.js"
+    },
+    "./fixtures": {
+      "types": "./dist/lib/test/fixtures.d.ts",
+      "default": "./dist/lib/test/fixtures.js"
+    }
+  },
+  "dependencies": {
+    "@zerologementvacant/utils": "workspace:*",
+    "effect": "3.21.2",
+    "mime": "4.1.0",
+    "ts-essentials": "10.2.0",
+    "ts-pattern": "5.9.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "8.4.1",
+    "@tsconfig/node24": "24.0.4",
+    "@turf/turf": "7.3.5",
+    "@types/geojson": "7946.0.16",
+    "@types/node": "24",
+    "jest-extended": "4.0.2",
+    "type-fest": "5.6.0"
+  }
+}

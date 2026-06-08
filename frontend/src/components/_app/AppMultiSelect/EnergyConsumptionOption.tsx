@@ -1,0 +1,16 @@
+import AppMultiSelectOption, {
+  type AppMultiSelectOptionProps
+} from './AppMultiSelectOption';
+import DPE from '../../DPE/DPE';
+
+interface Props extends AppMultiSelectOptionProps<string> {
+  label: string;
+}
+
+function EnergyConsumptionOption(props: Props) {
+  return (
+    <AppMultiSelectOption {...props} label={<DPE value={props.label} />} />
+  );
+}
+
+export default EnergyConsumptionOption;

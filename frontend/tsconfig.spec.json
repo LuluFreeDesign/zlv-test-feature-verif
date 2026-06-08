@@ -1,0 +1,42 @@
+{
+  "extends": ["@tsconfig/vite-react/tsconfig.json", "../tsconfig.base.json"],
+  "compilerOptions": {
+    "outDir": "dist/spec",
+    "tsBuildInfoFile": "dist/spec/tsconfig.tsbuildinfo",
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "paths": {
+      "~/*": ["./src/*"]
+    },
+    "types": [
+      "@testing-library/jest-dom",
+      "jest-extended",
+      "jest-sorted",
+      "vitest/globals",
+      "vitest/importMeta",
+      "vite/client",
+      "node",
+      "vitest",
+      "@nx/react/typings/cssmodule.d.ts",
+      "@nx/react/typings/image.d.ts"
+    ]
+  },
+  "include": [
+    "vite.config.ts",
+    "vite.config.mts",
+    "vitest.config.ts",
+    "vitest.config.mts",
+    // Config files are handled by their own TS configs; exclude from build typecheck to avoid rootDir issues
+    "src/mocks/**/*.ts",
+    "src/setupTests.ts",
+    "src/test",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.tsx"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ]
+}

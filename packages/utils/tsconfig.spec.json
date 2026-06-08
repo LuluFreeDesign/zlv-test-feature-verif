@@ -1,0 +1,21 @@
+{
+  "extends": ["@tsconfig/node24/tsconfig.json", "../../tsconfig.base.json"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/spec",
+    "tsBuildInfoFile": "dist/spec/tsconfig.tsbuildinfo",
+    "types": [
+      "vitest/globals",
+      "vitest/importMeta",
+      "vite/client",
+      "node",
+      "vitest"
+    ]
+  },
+  "include": ["src/**/*.test.ts"],
+  "references": [
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
+}

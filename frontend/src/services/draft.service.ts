@@ -1,0 +1,138 @@
+import {
+  type DraftCreationPayloadDTO,
+  type DraftDTO,
+  type DraftUpdatePayload as DraftUpdatePayloadNext,
+  type DraftUpdatePayloadDTO,
+  type SenderPayloadDTO
+} from '@zerologementvacant/models';
+import { pipe, Record } from 'effect';
+import type {
+  Draft,
+  DraftCreationPayload,
+  DraftUpdatePayload
+} from '../models/Draft';
+import type { SenderPayload } from '../models/Sender';
+import { zlvApi } from './api.service';
+
+export interface FindOptions {
+  campaign?: string;
+}
+
+export const draftApi = zlvApi.injectEndpoints({
+  endpoints: (builder) => ({
+    findDrafts: builder.query<Draft[], FindOptions | void>({
+      query: (opts) => ({
+        url: '/drafts',
+        params: {
+          campaign: opts?.campaign
+        }
+      }),
+      transformResponse: (drafts: DraftDTO[]) => drafts.map(fromDraftDTO),
+      providesTags(drafts) {
+        return [
+          ...(drafts ?? []).map((draft) => ({
+            type: 'Draft' as const,
+            id: draft.id
+          })),
+          { type: 'Draft', id: 'LIST' }
+        ];
+      }
+    }),
+    createDraft: builder.mutation<void, DraftCreationPayload>({
+      query: (draft) => ({
+        url: '/drafts',
+        method: 'POST',
+        body: toDraftCreationPayloadDTO(draft)
+      }),
+      invalidatesTags: [{ type: 'Draft', id: 'LIST' }]
+    }),
+    updateDraft: builder.mutation<void, DraftUpdatePayload>({
+      query: (draft) => ({
+        url: `/drafts/${draft.id}`,
+        method: 'PUT',
+        body: toDraftUpdatePayloadDTO(draft)
+      }),
+      invalidatesTags: (_result, _error, draft) => [
+        { type: 'Draft', id: draft.id }
+      ]
+    }),
+    updateDraftNext: builder.mutation<DraftDTO, DraftUpdatePayloadNext>({
+      query: ({ id, ...payload }) => ({
+        url: `drafts/${id}`,
+        method: 'PUT',
+        body: payload
+      }),
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Draft', id }]
+    })
+  })
+});
+
+function fromDraftDTO(draft: DraftDTO): Draft {
+  return {
+    id: draft.id,
+    subject: draft.subject,
+    body: draft.body?.replaceAll('<br />', '\n') ?? '',
+    logo: draft.logo,
+    logoNext: draft.logoNext,
+    sender: draft.sender,
+    writtenAt: draft.writtenAt,
+    writtenFrom: draft.writtenFrom,
+    createdAt: draft.createdAt,
+    updatedAt: draft.updatedAt
+  };
+}
+
+function toDraftCreationPayloadDTO(
+  draft: DraftCreationPayload
+): DraftCreationPayloadDTO {
+  return {
+    ...emptyToNull({
+      subject: draft.subject,
+      body: draft.body,
+      logo: draft.logo,
+      writtenAt: draft.writtenAt,
+      writtenFrom: draft.writtenFrom
+    }),
+    campaign: draft.campaign,
+    sender: toSenderPayloadDTO(draft.sender)
+  };
+}
+
+function toDraftUpdatePayloadDTO(
+  draft: DraftUpdatePayload
+): DraftUpdatePayloadDTO {
+  return {
+    ...emptyToNull({
+      subject: draft.subject,
+      body: draft.body,
+      writtenAt: draft.writtenAt,
+      writtenFrom: draft.writtenFrom
+    }),
+    id: draft.id,
+    logo: draft.logo,
+    sender: toSenderPayloadDTO(draft.sender)
+  };
+}
+
+function toSenderPayloadDTO(sender: SenderPayload): SenderPayloadDTO {
+  return emptyToNull(sender);
+}
+
+export function emptyToNull<T extends Record<any, any>>(obj: T): T {
+  return pipe(
+    obj,
+    Record.map((value) => {
+      if (typeof value === 'string' && value.trim() === '') {
+        return null;
+      }
+      return value;
+    })
+  );
+}
+
+export const {
+  useFindDraftsQuery,
+  useCreateDraftMutation,
+  useUpdateDraftMutation,
+  useUpdateDraftNextMutation
+} = draftApi;

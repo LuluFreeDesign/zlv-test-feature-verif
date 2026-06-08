@@ -1,0 +1,37 @@
+{
+  "name": "@zerologementvacant/pdf",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/lib/browser.d.ts",
+      "import": "./dist/lib/browser.js"
+    },
+    "./node": {
+      "types": "./dist/lib/node.d.ts",
+      "import": "./dist/lib/node.js"
+    },
+    "./worker": {
+      "import": "./dist/lib/generators/campaign.worker.js",
+      "default": "./dist/lib/generators/campaign.worker.js"
+    }
+  },
+  "dependencies": {
+    "@react-pdf/renderer": "4.5.1",
+    "@zerologementvacant/models": "workspace:*",
+    "react": "18.3.1",
+    "react-pdf-html": "2.1.5",
+    "ts-pattern": "5.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "24",
+    "@types/react": "18.3.28",
+    "happy-dom": "20.9.0",
+    "jest-extended": "4.0.2",
+    "unplugin-dts": "1.0.0"
+  },
+  "peerDependencies": {
+    "react": "18.3.1"
+  }
+}

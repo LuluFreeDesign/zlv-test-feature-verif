@@ -1,0 +1,48 @@
+import type { Variable } from './Variable';
+
+export const VARIABLE_OPTIONS: Variable[] = [
+  {
+    label: 'Nom et prénom propriétaire principal',
+    value: '{{owner.fullName}}'
+  },
+  {
+    label: 'Adresse BAN logement',
+    value: '{{housing.rawAddress}}'
+  },
+  {
+    label: 'Identifiant fiscal national',
+    value: '{{housing.localId}}'
+  },
+  {
+    label: 'Identifiant fiscal départemental',
+    value: '{{housing.invariant}}'
+  },
+  {
+    label: 'Référence cadastrale',
+    value: '{{housing.plotId}}'
+  },
+  {
+    label: 'Type de logement',
+    value: '{{housing.housingKind}}'
+  },
+  {
+    label: 'Surface en m²',
+    value: '{{housing.livingArea}}'
+  },
+  {
+    label: 'Nombre de pièces',
+    value: '{{housing.roomsCount}}'
+  },
+  {
+    label: 'Date de construction',
+    value: '{{housing.buildingYear}}'
+  },
+  {
+    label: 'Année de début de vacance',
+    value: '{{housing.vacancyStartYear}}'
+  },
+  {
+    label: 'DPE',
+    value: '{{housing.energyConsumption}}'
+  }
+];

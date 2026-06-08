@@ -1,0 +1,36 @@
+import { Tag, type TagProps } from '@codegouvfr/react-dsfr/Tag';
+import type { RelativeLocation } from '@zerologementvacant/models';
+
+import { RELATIVE_LOCATION_LABELS } from '~/models/HousingOwner';
+
+type TagSpanProps = Omit<TagProps.Common, 'children'> &
+  (TagProps.WithIcon | TagProps.WithoutIcon) &
+  Omit<TagProps.AsSpan, 'as'>;
+
+export interface RelativeLocationTagProps {
+  value: RelativeLocation;
+  tagProps?: TagSpanProps;
+}
+
+function RelativeLocationTag(props: RelativeLocationTagProps) {
+  const text = RELATIVE_LOCATION_LABELS[props.value];
+
+  if (props.value === 'other') {
+    return null;
+  }
+
+  return (
+    <Tag
+      {...props.tagProps}
+      as="span"
+      nativeSpanProps={{
+        ...props.tagProps?.nativeSpanProps,
+        'aria-label': 'Lieu de résidence'
+      }}
+    >
+      {text}
+    </Tag>
+  );
+}
+
+export default RelativeLocationTag;
