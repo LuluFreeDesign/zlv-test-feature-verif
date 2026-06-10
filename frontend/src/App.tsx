@@ -26,6 +26,7 @@ const AnalysisViewNext = lazy(() => import('~/views/Analysis/AnalysisViewNext'))
 const CampaignListView = lazy(() => import('~/views/Campaign/CampaignListView'));
 const CampaignView = lazy(() => import('~/views/Campaign/CampaignView'));
 const GroupView = lazy(() => import('~/views/Group/GroupView'));
+const GroupHousingReviewView = lazy(() => import('~/views/Group/GroupHousingReviewView'));
 const HousingOwnersView = lazy(() => import('~/views/Housing/HousingOwnersView'));
 const HousingView = lazy(() => import('~/views/Housing/HousingView'));
 const HousingListTabsProvider = lazy(() => import('~/views/HousingList/HousingListTabsProvider'));
@@ -73,6 +74,16 @@ const router = sentry.createBrowserRouter(
           }
         />
         <Route path="/groupes/:id" element={<GroupView />} />
+        <Route
+          path="/groupes/:id/passer-en-revue"
+          element={
+            <FeatureFlagLayout
+              flag="group-housing-review"
+              then={<GroupHousingReviewView />}
+              else={<NotFoundView />}
+            />
+          }
+        />
         <Route path="/campagnes" element={<CampaignListView />} />
         <Route path="/campagnes/:id" element={<CampaignView />} />
         <Route path="/proprietaires/:id" element={<OwnerView />} />

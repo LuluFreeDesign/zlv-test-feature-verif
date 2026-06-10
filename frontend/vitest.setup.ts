@@ -16,6 +16,10 @@ global.EventSource = EventSourceMock as unknown as EventSource;
 
 vi.mock('./src/components/RichEditor/RichEditor.tsx');
 vi.mock('./src/components/Map/Map.tsx');
+// The DSFR Charts gauge is a Vue web component that cannot load under happy-dom.
+vi.mock('./src/components/ui/GaugeChart/GaugeChart.tsx', () => ({
+  default: () => null
+}));
 
 beforeAll(() => {
   mockAPI.listen({

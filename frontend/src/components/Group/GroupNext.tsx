@@ -1,29 +1,47 @@
 import { fr } from '@codegouvfr/react-dsfr';
 import Button from '@codegouvfr/react-dsfr/Button';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import type { ReactNode } from 'react';
+import { useFeatureFlagEnabled } from 'posthog-js/react';
+import { useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
 import { match, Pattern } from 'ts-pattern';
 
 import AppLink from '~/components/_app/AppLink/AppLink';
 import { createCampaignFromGroupModal } from '~/components/Group/CreateCampaignFromGroupModal';
 import { createRemoveGroupModal } from '~/components/Group/RemoveGroupModal';
 import { createRenameGroupModal } from '~/components/Group/RenameGroupModal';
+import Dropdown from '~/components/Dropdown/Dropdown';
 import FullWidthButton from '~/components/ui/FullWidthButton';
+import GaugeChart from '~/components/ui/GaugeChart/GaugeChart';
 import Icon from '~/components/ui/Icon';
+import { useHousingReview } from '~/hooks/useHousingReview';
 import type { Campaign } from '~/models/Campaign';
 import type { Group as GroupModel } from '~/models/Group';
 import type { GroupPayload } from '~/models/GroupPayload';
 import { createdBy } from '~/models/User';
 import { useFindCampaignsQuery } from '~/services/campaign.service';
+import config from '~/utils/config';
 import { dateShortFormat } from '~/utils/dateUtils';
 import { pluralize } from '~/utils/stringUtils';
 
 const campaignFromGroupModal = createCampaignFromGroupModal();
 const renameGroupModal = createRenameGroupModal();
 const removeGroupModal = createRemoveGroupModal();
+
+const REVIEW_FEATURE_FLAG = 'group-housing-review';
+
+/** Left-aligned, full-width button used inside the "Actions" dropdown menu. */
+const ActionMenuButton = styled(Button)({
+  color: `${fr.colors.decisions.text.title.grey.default} !important`,
+  justifyContent: 'flex-start !important',
+  padding: '0.75rem 1rem !important',
+  width: '100% !important'
+});
 
 export interface GroupProps {
   className?: string;
@@ -37,6 +55,14 @@ export interface GroupProps {
 }
 
 function Group(props: Readonly<GroupProps>) {
+  const navigate = useNavigate();
+  const review = useHousingReview(props.group.id);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const reviewEnabledByPosthog = useFeatureFlagEnabled(REVIEW_FEATURE_FLAG);
+  const reviewEnabled =
+    reviewEnabledByPosthog ?? config.featureFlags.includes(REVIEW_FEATURE_FLAG);
+  const reviewPath = `/groupes/${props.group.id}/passer-en-revue`;
+
   const findCampaignsQuery = useFindCampaignsQuery({
     filters: { groupIds: [props.group.id] }
   });
@@ -184,13 +210,58 @@ function Group(props: Readonly<GroupProps>) {
               }}
             >
               <li style={{ width: '100%' }}>
-                <FullWidthButton
-                  priority="primary"
-                  onClick={campaignFromGroupModal.open}
-                  disabled={props.group.housingCount === 0}
+                <Box
+                  sx={{
+                    width: '100%',
+                    '& > button': {
+                      width: '100%',
+                      justifyContent: 'space-between'
+                    }
+                  }}
                 >
-                  Créer une campagne
-                </FullWidthButton>
+                  <Dropdown
+                    label="Actions"
+                    open={actionsOpen}
+                    onOpen={() => setActionsOpen(true)}
+                    onClose={() => setActionsOpen(false)}
+                    buttonProps={{
+                      priority: 'primary',
+                      size: 'medium',
+                      disabled: props.group.housingCount === 0
+                    }}
+                    popoverProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' }
+                    }}
+                  >
+                    <Stack component="ul" sx={{ width: '20rem', listStyle: 'none', m: 0, p: '0.5rem 0' }}>
+                      <li>
+                        <ActionMenuButton
+                          priority="tertiary no outline"
+                          onClick={() => {
+                            setActionsOpen(false);
+                            campaignFromGroupModal.open();
+                          }}
+                        >
+                          Créer une campagne
+                        </ActionMenuButton>
+                      </li>
+                      {reviewEnabled ? (
+                        <li>
+                          <ActionMenuButton
+                            priority="tertiary no outline"
+                            onClick={() => {
+                              setActionsOpen(false);
+                              navigate(reviewPath);
+                            }}
+                          >
+                            Passer en revue les logements
+                          </ActionMenuButton>
+                        </li>
+                      ) : null}
+                    </Stack>
+                  </Dropdown>
+                </Box>
               </li>
 
               <li style={{ width: '100%' }}>
@@ -215,6 +286,35 @@ function Group(props: Readonly<GroupProps>) {
             </ul>
           </Grid>
         </Grid>
+
+        {reviewEnabled && review.started ? (
+          <Stack
+            direction="row"
+            spacing="1rem"
+            useFlexGap
+            sx={{ alignItems: 'center' }}
+          >
+            <Stack spacing="0.25rem" useFlexGap sx={{ flexGrow: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {review.verifiedCount} logement
+                {review.verifiedCount > 1 ? 's' : ''} vérifié
+                {review.verifiedCount > 1 ? 's' : ''} sur{' '}
+                {props.group.housingCount}
+              </Typography>
+              <GaugeChart
+                value={review.verifiedCount}
+                target={props.group.housingCount}
+                legend={false}
+              />
+            </Stack>
+            <Button
+              priority="secondary"
+              onClick={() => navigate(reviewPath)}
+            >
+              Continuer le passage en revue
+            </Button>
+          </Stack>
+        ) : null}
 
         {match(findCampaignsQuery)
           .with({ isLoading: true }, () => (
