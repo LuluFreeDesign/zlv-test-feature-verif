@@ -76,25 +76,29 @@ export function seed(): DemoSeed {
   const owners: OwnerDTO[] = Array.from({ length: 25 }, () => genOwnerDTO());
   data.owners.push(...owners);
 
-  // --- Housings (+ main owner per housing) ---------------------------------
+  // --- Housings (+ owners with ranks per housing) --------------------------
   const housings: HousingDTO[] = [];
   for (let index = 0; index < 32; index++) {
     const housing = genHousingDTO(DEMO_GEO_CODE);
     housings.push(housing);
 
-    const owner = faker.helpers.arrayElement(owners);
-    data.housingOwners.set(housing.id, [
-      {
+    // 1 primary owner (rank 1) + up to 3 secondary owners (ranks 2..4), so the
+    // review flow has meaningful rank-editing to test.
+    const ownerCount = faker.number.int({ min: 1, max: 4 });
+    const selectedOwners = faker.helpers.arrayElements(owners, ownerCount);
+    data.housingOwners.set(
+      housing.id,
+      selectedOwners.map((owner, rankIndex) => ({
         id: owner.id,
-        rank: 1,
+        rank: rankIndex + 1,
         locprop: null,
         idprocpte: null,
         idprodroit: null,
         propertyRight: null,
         relativeLocation: 'same-commune',
         absoluteDistance: 50
-      }
-    ]);
+      }))
+    );
   }
   data.housings.push(...housings);
 

@@ -148,6 +148,8 @@ describe('Group view', () => {
         campaign
       });
 
+      const actions = await screen.findByRole('button', { name: /^Actions/ });
+      await user.click(actions);
       const createCampaign = await screen.findByRole('button', {
         name: /^Créer une campagne/
       });
@@ -176,6 +178,8 @@ describe('Group view', () => {
         campaign
       });
 
+      const actions = await screen.findByRole('button', { name: /^Actions/ });
+      await user.click(actions);
       const createCampaign = await screen.findByRole('button', {
         name: /^Créer une campagne/
       });

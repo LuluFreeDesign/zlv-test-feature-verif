@@ -25,6 +25,7 @@ import data from './data';
 
 interface HousingQueryParams {
   campaignIds?: string;
+  groupIds?: string;
   housingKinds?: string;
   relativeLocations?: string;
   status?: string;
@@ -44,6 +45,9 @@ function parseQueryParams(url: URL): FilterParams {
     campaignIds: params.campaignIds
       ? new Set(params.campaignIds.split(','))
       : undefined,
+    groupIds: params.groupIds
+      ? new Set(params.groupIds.split(','))
+      : undefined,
     housingKinds: params.housingKinds
       ? new Set(params.housingKinds.split(','))
       : undefined,
@@ -60,7 +64,7 @@ const find = http.get<
   Paginated<HousingDTO>
 >(`${config.apiEndpoint}/housing`, async ({ request }) => {
   const url = new URL(request.url);
-  const { campaignIds, housingKinds, relativeLocations, statuses } =
+  const { campaignIds, groupIds, housingKinds, relativeLocations, statuses } =
     parseQueryParams(url);
 
   const subset = pipe(
@@ -77,7 +81,7 @@ const find = http.get<
         owner: mainOwner
       };
     }),
-    filter({ campaignIds, housingKinds, statuses, relativeLocations })
+    filter({ campaignIds, groupIds, housingKinds, statuses, relativeLocations })
   );
 
   return HttpResponse.json({
@@ -340,9 +344,20 @@ export function filterByHousingIds(
 
 interface FilterParams {
   campaignIds?: Set<string>;
+  groupIds?: Set<string>;
   housingKinds?: Set<string>;
   statuses?: Set<number>;
   relativeLocations?: Set<string>;
+}
+
+export function byGroup(groups: Set<string>): Predicate.Predicate<HousingDTO> {
+  return (housing) =>
+    [...groups].some(
+      (groupId) =>
+        data.groupHousings
+          .get(groupId)
+          ?.some((groupHousing) => groupHousing.id === housing.id) ?? false
+    );
 }
 
 export function byCampaign(
@@ -385,6 +400,7 @@ export function byRelativeLocation(
 export function filter(params: FilterParams) {
   const predicates: Predicate.Predicate<HousingDTO>[] = [
     params.campaignIds ? byCampaign(params.campaignIds) : null,
+    params.groupIds ? byGroup(params.groupIds) : null,
     params.housingKinds ? byKind(params.housingKinds) : null,
     params.statuses ? byStatus(params.statuses) : null,
     params.relativeLocations

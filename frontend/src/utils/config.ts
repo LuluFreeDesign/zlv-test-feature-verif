@@ -84,6 +84,31 @@ const config = schema.validateSync({
 });
 
 
+/**
+ * Resolve the API endpoint.
+ *
+ * When `VITE_API_URL` is a relative path (e.g. `/api`, demo mode), turn it into
+ * an ABSOLUTE, SAME-ORIGIN, base-path-aware URL. This is required so that:
+ *  - MSW (service worker) intercepts mutations without a cross-origin CORS
+ *    preflight (which would be bypassed → network failure → error toasts);
+ *  - the deployed HTTPS site has no "mixed content";
+ *  - it stays under the service-worker scope when served from a sub-path
+ *    (e.g. GitHub Pages `/zlv-test-feature-verif/`).
+ * Absolute URLs (real backend) are used as-is.
+ */
+function resolveApiEndpoint(setting: string): string {
+  if (!setting.startsWith('/')) {
+    return setting;
+  }
+  const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
+  const path = setting.replace(/^\//, '');
+  const origin =
+    typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : '';
+  return `${origin}${base}/${path}`;
+}
+
 interface Config {
   apiEndpoint: string;
   banEndpoint: string;
@@ -110,7 +135,7 @@ interface Config {
 }
 
 export default {
-  apiEndpoint: config.api.url,
+  apiEndpoint: resolveApiEndpoint(config.api.url),
   banEligibleScore: config.ban.eligibleScore,
   banEndpoint: config.ban.url,
   featureFlags: config.featureFlags,

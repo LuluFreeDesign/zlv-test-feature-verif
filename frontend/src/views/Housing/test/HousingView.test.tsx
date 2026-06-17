@@ -548,7 +548,7 @@ describe('Housing view', () => {
       housing.occupancyIntended = null;
 
       const existingPrecisions = data.precisions.filter(
-        (precision) => precision.category === 'dispositifs-incitatifs'
+        (precision) => precision.category === 'blocage-involontaire'
       );
       data.housingPrecisions.set(
         housing.id,
@@ -577,7 +577,7 @@ describe('Housing view', () => {
       const modifyButton = await within(mobilizationPanel).findByRole(
         'button',
         {
-          name: 'Modifier les dispositifs'
+          name: 'Modifier les points de blocage'
         }
       );
       await user.click(modifyButton);

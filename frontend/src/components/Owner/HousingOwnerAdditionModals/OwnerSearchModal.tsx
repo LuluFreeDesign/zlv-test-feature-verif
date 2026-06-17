@@ -25,9 +25,9 @@ export type OwnerSearchModalProps = Omit<
   onSelect(owner: Owner): void;
 };
 
-function createOwnerSearchModal() {
+function createOwnerSearchModal(id = 'owner-search-modal') {
   const modal = createExtendedModal({
-    id: 'owner-search-modal',
+    id,
     isOpenedByDefault: false
   });
 

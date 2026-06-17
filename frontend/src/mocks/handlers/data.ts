@@ -79,11 +79,78 @@ const localities = new Map<LocalityDTO['geoCode'], LocalityDTO>();
 
 const notes: NoteDTO[] = [];
 
-const precisions: Precision[] = PRECISION_CATEGORY_VALUES.map((category) => ({
-  id: faker.string.uuid(),
-  category: category,
-  label: faker.word.sample()
-}));
+// Real ZLV precision referential (points de blocage / évolutions / dispositifs).
+const PRECISION_LABELS: Record<Precision['category'], string[]> = {
+  'dispositifs-incitatifs': [
+    'Conventionnement avec travaux',
+    'Conventionnement sans travaux',
+    'Aides locales travaux',
+    'Aides à la gestion locative',
+    'Intermédiation Locative (IML)',
+    'Dispositif fiscal',
+    'Prime locale vacance',
+    'Prime vacance France Ruralités',
+    'Ma Prime Renov',
+    'Prime Rénovation Globale',
+    'Prime locale rénovation énergétique',
+    'Accompagnement à la vente',
+    'Autre'
+  ],
+  'dispositifs-coercitifs': [
+    'ORI ou RHI - THIRORI',
+    'Bien sans maître',
+    'Abandon manifeste',
+    'DIA - préemption',
+    'Procédure d’habitat indigne (hygiène, insalubrité, péril)',
+    'Permis de louer',
+    'Permis de diviser',
+    'Autre'
+  ],
+  'hors-dispositif-public': [
+    'Accompagné par un professionnel (architecte, agent immobilier, etc.)',
+    'Propriétaire autonome'
+  ],
+  'blocage-involontaire': [
+    'Mise en location ou vente infructueuse',
+    'Succession en cours',
+    'Défaut d’entretien / Nécessité de travaux',
+    'Problème de financement / Dossier non-éligible',
+    'Manque de conseils en amont de l’achat',
+    'En incapacité (âge, handicap, précarité ...)'
+  ],
+  'blocage-volontaire': [
+    'Réserve personnelle ou pour une autre personne',
+    'Stratégie de gestion',
+    'Mauvaise expérience locative',
+    'Montants des travaux perçus comme trop importants',
+    'Refus catégorique, sans raison'
+  ],
+  'immeuble-environnement': [
+    'Pas d’accès indépendant',
+    'Immeuble dégradé',
+    'Ruine / Immeuble à démolir',
+    'Nuisances à proximité',
+    'Risques Naturels / Technologiques'
+  ],
+  'tiers-en-cause': [
+    'Entreprise(s) en défaut',
+    'Copropriété en désaccord',
+    'Expertise judiciaire',
+    'Autorisation d’urbanisme refusée / Blocage ABF',
+    'Interdiction de location'
+  ],
+  travaux: ['À venir', 'En cours', 'Terminés'],
+  occupation: ['À venir', 'En cours', 'Nouvelle occupation'],
+  mutation: ['À venir', 'En cours', 'Effectuée']
+};
+
+const precisions: Precision[] = PRECISION_CATEGORY_VALUES.flatMap((category) =>
+  PRECISION_LABELS[category].map((label) => ({
+    id: faker.string.uuid(),
+    category,
+    label
+  }))
+);
 
 const prospects: ProspectDTO[] = [];
 
