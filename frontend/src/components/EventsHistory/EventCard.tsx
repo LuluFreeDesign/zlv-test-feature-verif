@@ -10,13 +10,14 @@ import { useToggle } from 'react-use';
 import { match } from 'ts-pattern';
 
 import { useAvailableEstablishments } from '../../hooks/useAvailableEstablishments';
+import type { ColorFamily } from '../../models/ColorFamily';
 import { ADMIN_LABEL, formatAuthor } from '../../models/User';
 import type { User } from '../../models/User';
 import AppBadge from '../_app/AppBadge/AppBadge';
 import HistoryCard from './HistoryCard';
 
 interface EventCardProps {
-  title: string;
+  title: ReactNode;
   differences: ReadonlyArray<ReactNode>;
   createdAt: string | Date;
   createdBy: User;
@@ -24,10 +25,18 @@ interface EventCardProps {
    * @default true
    */
   includeTime?: boolean;
+  /** Badge label + color family. Defaults to a blue "Mise à jour" badge. */
+  badgeLabel?: string;
+  badgeColorFamily?: ColorFamily;
+  /** Label of the collapsed "show more" button. */
+  moreLabel?: string;
 }
 
 function EventCard(props: EventCardProps) {
   const [showAllDifferences, toggleShowAllDifferences] = useToggle(false);
+  const badgeLabel = props.badgeLabel ?? 'Mise à jour';
+  const badgeColorFamily: ColorFamily = props.badgeColorFamily ?? 'blue-cumulus';
+  const moreLabel = props.moreLabel ?? 'Plus de détails';
   const date: string = format(new Date(props.createdAt), 'dd/MM/yyyy', {
     locale: localeFR
   });
@@ -50,13 +59,13 @@ function EventCard(props: EventCardProps) {
   return (
     <HistoryCard icon="ri-folder-line">
       <Stack
-        aria-label="Mise à jour"
+        aria-label={badgeLabel}
         component="section"
         spacing="0.5rem"
         sx={{ flexGrow: 1 }}
       >
-        <AppBadge colorFamily="blue-cumulus" small>
-          Mise à jour
+        <AppBadge colorFamily={badgeColorFamily} small>
+          {badgeLabel}
         </AppBadge>
 
         <Typography>
@@ -67,6 +76,7 @@ function EventCard(props: EventCardProps) {
         </Typography>
 
         {match(props.differences.length)
+          .with(0, () => null)
           .with(1, () => (
             <Typography
               variant="body2"
@@ -83,7 +93,7 @@ function EventCard(props: EventCardProps) {
                   onClick={toggleShowAllDifferences}
                   size="small"
                 >
-                  Plus de détails
+                  {moreLabel}
                 </Button>
               );
             }

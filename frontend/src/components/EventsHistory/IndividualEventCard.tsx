@@ -17,6 +17,7 @@ import { HousingOwnerUpdatedEventCard } from './events/HousingOwnerUpdatedEventC
 import { HousingPrecisionAttachedEventCard } from './events/HousingPrecisionAttachedEventCard';
 import { HousingPrecisionDetachedEventCard } from './events/HousingPrecisionDetachedEventCard';
 import { HousingStatusUpdatedEventCard } from './events/HousingStatusUpdatedEventCard';
+import { HousingVerifiedEventCard } from './events/HousingVerifiedEventCard';
 import { OwnerUpdatedEventCard } from './events/OwnerUpdatedEventCard';
 
 export interface IndividualEventCardProps {
@@ -43,6 +44,12 @@ function IndividualEventCard(props: IndividualEventCardProps) {
         { type: 'housing:status-updated' },
         (event: Event<'housing:status-updated'>) => (
           <HousingStatusUpdatedEventCard event={event} />
+        )
+      )
+      .with(
+        { type: 'housing:verified' },
+        (event: Event<'housing:verified'>) => (
+          <HousingVerifiedEventCard event={event} />
         )
       )
       .with(

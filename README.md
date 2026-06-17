@@ -20,7 +20,7 @@ tester de nouvelles fonctionnalités à des usagers.
 
 | Fichier | Rôle |
 |---|---|
-| `frontend/src/mocks/seed.ts` | Injecte un graphe cohérent de fausses données (1 collectivité, ~30 logements, propriétaires, groupes, campagne, notes). Seed faker **déterministe** → données reproductibles. |
+| `frontend/src/mocks/seed.ts` | Injecte un graphe cohérent de fausses données : **Lorient Agglomération**, ~30 logements (majorité vacants/LOVAC 2023–2026, minorité en location/FF 2023), propriétaires, groupes, campagne, notes. Seed faker **déterministe** → données reproductibles. |
 | `frontend/src/mocks/browser.ts` | Démarre MSW en mode navigateur (`setupWorker`). |
 | `frontend/src/mocks/demo-handlers.ts` | Override du login : **n'importe quel identifiant** fonctionne, renvoie un vrai JWT. |
 | `frontend/src/mocks/start.ts` | Orchestration : seed → **auto-login** (écrit `authUser` dans le localStorage) → démarre le worker. |
@@ -58,7 +58,23 @@ sur `main`.
 Le base path (`/zlv-test-feature-verif/`) est géré via `VITE_BASE_PATH` (routeur + assets + scope du
 service worker).
 
-## Ajouter la fonctionnalité à tester
+## Fonctionnalité en test : « Passer en revue les logements »
+
+Derrière le feature flag `group-housing-review`. Depuis une page groupe, le bouton **« Actions »**
+ouvre l'écran de revue (`/groupes/:id/passer-en-revue`) où l'usager vérifie/édite chaque logement
+(propriétaires & rangs, occupation, statut/sous-statut, précisions, note, DPE), puis **« Enregistre et
+passe au suivant »**.
+
+- Progression « vérifié » **par groupe** (localStorage) → barre de progression + « Continuer le
+  passage en revue » sur la page groupe.
+- À chaque vérification, un événement **« Vérification »** (badge green-bourgeon) apparaît dans
+  l'onglet « Notes et historique » du logement, avec la liste des modifications (bouton « Voir plus »).
+
+Fichiers clés : `views/Group/GroupHousingReviewView.tsx`, `components/HousingReview/*`,
+`components/EventsHistory/events/HousingVerifiedEventCard.tsx`, `hooks/useHousingReview.ts`,
+`utils/housingReview.ts`.
+
+## Ajouter une autre fonctionnalité
 
 Le routing ZLV gère déjà les feature flags via `FeatureFlagLayout` (voir `frontend/src/App.tsx`).
 Pour brancher une nouvelle fonctionnalité :

@@ -14,6 +14,7 @@ import {
   ENERGY_CONSUMPTION_VALUES,
   HOUSING_STATUS_VALUES,
   Occupancy,
+  OCCUPANCY_LABELS,
   OCCUPANCY_VALUES,
   PRECISION_CATEGORY_VALUES
 } from '@zerologementvacant/models';
@@ -39,11 +40,13 @@ import AppTextInputNext from '~/components/_app/AppTextInput/AppTextInputNext';
 import { useHousingReview } from '~/hooks/useHousingReview';
 import { useNotification } from '~/hooks/useNotification';
 import { HousingStates } from '~/models/HousingState';
+import { useCreateHousingVerificationEventMutation } from '~/services/event.service';
 import { useGetGroupQuery } from '~/services/group.service';
 import {
   useFindHousingQuery,
   useUpdateHousingMutation
 } from '~/services/housing.service';
+import type { Housing } from '~/models/Housing';
 import { useCreateNoteByHousingMutation } from '~/services/note.service';
 import {
   useFindPrecisionsByHousingQuery,
@@ -110,6 +113,55 @@ function fakeRepresentativeDpe(housingId: string): EnergyConsumption {
   return ENERGY_CONSUMPTION_VALUES[sum % ENERGY_CONSUMPTION_VALUES.length];
 }
 
+/**
+ * Human-readable list of the modifications made during a review, used as the
+ * "Voir plus" details of the "Vérification" history event.
+ */
+function buildVerificationModifications(
+  oldHousing: Housing,
+  payload: ReviewFormSchema,
+  dirty: Partial<Record<keyof ReviewFormSchema, unknown>>
+): string[] {
+  const occupancyLabel = (value: string | null | undefined): string =>
+    value ? (OCCUPANCY_LABELS[value as Occupancy] ?? value) : 'Pas d’information';
+  const statusLabel = (status: number | null | undefined): string =>
+    HousingStates.find((state) => state.status === status)?.title ?? 'Non suivi';
+
+  const modifications: string[] = [];
+  if (dirty.occupancy) {
+    modifications.push(
+      `L’occupation actuelle est passée de « ${occupancyLabel(oldHousing.occupancy)} » à « ${occupancyLabel(payload.occupancy)} »`
+    );
+  }
+  if (dirty.occupancyIntended) {
+    modifications.push(
+      `L’occupation prévisionnelle est passée de « ${occupancyLabel(oldHousing.occupancyIntended)} » à « ${occupancyLabel(payload.occupancyIntended)} »`
+    );
+  }
+  if (dirty.status) {
+    modifications.push(
+      `Le statut de suivi est passé de « ${statusLabel(oldHousing.status)} » à « ${statusLabel(payload.status)} »`
+    );
+  }
+  if (dirty.subStatus) {
+    modifications.push(
+      `Le sous-statut de suivi est passé de « ${oldHousing.subStatus ?? 'aucun'} » à « ${payload.subStatus ?? 'aucun'} »`
+    );
+  }
+  if (dirty.actualEnergyConsumption) {
+    modifications.push(
+      `L’étiquette DPE renseignée est passée de « ${oldHousing.actualEnergyConsumption ?? 'aucune'} » à « ${payload.actualEnergyConsumption ?? 'aucune'} »`
+    );
+  }
+  if (dirty.precisions) {
+    modifications.push('Les précisions ont été mises à jour');
+  }
+  if (payload.note) {
+    modifications.push('Une note a été ajoutée');
+  }
+  return modifications;
+}
+
 function GroupHousingReviewView() {
   const { id: groupId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -147,6 +199,8 @@ function GroupHousingReviewView() {
   const [updateHousing, housingUpdateMutation] = useUpdateHousingMutation();
   const [saveHousingPrecisions] = useSaveHousingPrecisionsMutation();
   const [createNote] = useCreateNoteByHousingMutation();
+  const [createVerificationEvent] =
+    useCreateHousingVerificationEventMutation();
 
   useNotification({
     toastId: 'review-housing-update',
@@ -226,6 +280,18 @@ function GroupHousingReviewView() {
     if (payload.note) {
       createNote({ id: selectedHousing.id, content: payload.note });
     }
+
+    // Record a "Vérification" event in the housing history, listing the
+    // modifications made during this review.
+    createVerificationEvent({
+      housingId: selectedHousing.id,
+      group: groupId ? { id: groupId, title: group?.title ?? 'Groupe' } : null,
+      modifications: buildVerificationModifications(
+        selectedHousing,
+        payload,
+        form.formState.dirtyFields
+      )
+    });
 
     markVerified(selectedHousing.id);
 

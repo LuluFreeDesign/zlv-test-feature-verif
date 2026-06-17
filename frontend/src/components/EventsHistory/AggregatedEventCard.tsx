@@ -62,6 +62,12 @@ function AggregatedEventCard(props: AggregatedEventCardProps) {
             })
         )
         .with(
+          { type: 'housing:verified' },
+          (event: Event<'housing:verified'>) => [
+            ...event.nextNew.modifications
+          ]
+        )
+        .with(
           { type: 'housing:precision-attached' },
           (event: Event<'housing:precision-attached'>) =>
             formatHousingPrecisionAttachedDifferences({
