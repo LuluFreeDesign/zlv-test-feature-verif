@@ -1,9 +1,10 @@
 import { fr } from '@codegouvfr/react-dsfr';
-import Badge from '@codegouvfr/react-dsfr/Badge';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
+import Icon from '~/components/ui/Icon';
 import type { Housing } from '~/models/Housing';
 
 export interface ReviewHousingListProps {
@@ -26,22 +27,20 @@ const ListItemButton = styled('button', {
       ? fr.colors.decisions.border.active.blueFrance.default
       : 'transparent'
   }`,
+  // Separator between housings.
+  borderBottom: `1px solid ${fr.colors.decisions.border.default.grey.default}`,
   padding: '0.75rem 1rem',
-  backgroundColor: verified
-    ? fr.colors.decisions.background.contrast.success.default
-    : selected
-      ? fr.colors.decisions.background.alt.blueFrance.default
-      : 'transparent',
-  '&:hover': {
-    backgroundColor: verified
-      ? fr.colors.decisions.background.contrast.success.hover
-      : fr.colors.decisions.background.alt.blueFrance.hover
-  }
+  // Selected (not verified) keeps the blue/grey tint; verified is green.
+  backgroundColor: selected
+    ? fr.colors.decisions.background.alt.blueFrance.default
+    : verified
+      ? 'var(--green-bourgeon-975)'
+      : 'transparent'
 }));
 
 function ReviewHousingList(props: Readonly<ReviewHousingListProps>) {
   return (
-    <Stack
+    <Box
       component="ul"
       sx={{ listStyle: 'none', m: 0, p: 0 }}
       aria-label="Logements à vérifier"
@@ -62,32 +61,38 @@ function ReviewHousingList(props: Readonly<ReviewHousingListProps>) {
                 direction="row"
                 spacing="0.5rem"
                 useFlexGap
-                sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+                sx={{ alignItems: 'flex-start' }}
               >
-                <Typography
-                  component="span"
-                  sx={{ fontWeight: selected ? 700 : 500 }}
-                >
-                  {housing.rawAddress.join(', ')}
-                </Typography>
                 {verified ? (
-                  <Badge severity="success" small noIcon={false}>
-                    Vérifié
-                  </Badge>
+                  <Icon
+                    name="fr-icon-check-line"
+                    size="sm"
+                    color={fr.colors.decisions.text.default.success.default}
+                  />
                 ) : null}
+                <Stack>
+                  <Typography
+                    component="span"
+                    sx={{ fontWeight: selected ? 700 : 500 }}
+                  >
+                    {housing.rawAddress.join(', ')}
+                  </Typography>
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    sx={{
+                      color: fr.colors.decisions.text.mention.grey.default
+                    }}
+                  >
+                    {housing.owner?.fullName ?? 'Propriétaire inconnu'}
+                  </Typography>
+                </Stack>
               </Stack>
-              <Typography
-                component="span"
-                variant="body2"
-                sx={{ color: fr.colors.decisions.text.mention.grey.default }}
-              >
-                {housing.owner?.fullName ?? 'Propriétaire inconnu'}
-              </Typography>
             </ListItemButton>
           </li>
         );
       })}
-    </Stack>
+    </Box>
   );
 }
 

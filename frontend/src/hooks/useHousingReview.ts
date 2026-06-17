@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   getReviewState,
@@ -14,6 +14,17 @@ export function useHousingReview(groupId: string) {
   const [state, setState] = useState<ReviewState>(() =>
     getReviewState(groupId)
   );
+
+  // The review route reuses the same component instance across group ids
+  // (same route pattern). Re-read the (group-scoped) state when the id changes,
+  // otherwise a housing verified in group A would look verified in group B.
+  const previousGroupId = useRef(groupId);
+  useEffect(() => {
+    if (previousGroupId.current !== groupId) {
+      previousGroupId.current = groupId;
+      setState(getReviewState(groupId));
+    }
+  }, [groupId]);
 
   const markVerified = useCallback(
     (housingId: string) => {

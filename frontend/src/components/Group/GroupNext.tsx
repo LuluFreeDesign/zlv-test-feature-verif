@@ -16,8 +16,8 @@ import { createCampaignFromGroupModal } from '~/components/Group/CreateCampaignF
 import { createRemoveGroupModal } from '~/components/Group/RemoveGroupModal';
 import { createRenameGroupModal } from '~/components/Group/RenameGroupModal';
 import Dropdown from '~/components/Dropdown/Dropdown';
+import ReviewProgressBar from '~/components/HousingReview/ReviewProgressBar';
 import FullWidthButton from '~/components/ui/FullWidthButton';
-import GaugeChart from '~/components/ui/GaugeChart/GaugeChart';
 import Icon from '~/components/ui/Icon';
 import { useHousingReview } from '~/hooks/useHousingReview';
 import type { Campaign } from '~/models/Campaign';
@@ -215,7 +215,12 @@ function Group(props: Readonly<GroupProps>) {
                     width: '100%',
                     '& > button': {
                       width: '100%',
-                      justifyContent: 'space-between'
+                      justifyContent: 'center',
+                      // Neutralise the dropdown's "open" background so the
+                      // primary button keeps its normal state when clicked.
+                      '--background-open-blue-france':
+                        fr.colors.decisions.background.actionHigh.blueFrance
+                          .default
                     }
                   }}
                 >
@@ -287,35 +292,6 @@ function Group(props: Readonly<GroupProps>) {
           </Grid>
         </Grid>
 
-        {reviewEnabled && review.started ? (
-          <Stack
-            direction="row"
-            spacing="1rem"
-            useFlexGap
-            sx={{ alignItems: 'center' }}
-          >
-            <Stack spacing="0.25rem" useFlexGap sx={{ flexGrow: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {review.verifiedCount} logement
-                {review.verifiedCount > 1 ? 's' : ''} vérifié
-                {review.verifiedCount > 1 ? 's' : ''} sur{' '}
-                {props.group.housingCount}
-              </Typography>
-              <GaugeChart
-                value={review.verifiedCount}
-                target={props.group.housingCount}
-                legend={false}
-              />
-            </Stack>
-            <Button
-              priority="secondary"
-              onClick={() => navigate(reviewPath)}
-            >
-              Continuer le passage en revue
-            </Button>
-          </Stack>
-        ) : null}
-
         {match(findCampaignsQuery)
           .with({ isLoading: true }, () => (
             <Skeleton variant="rectangular" width={400} height={24} />
@@ -352,6 +328,37 @@ function Group(props: Readonly<GroupProps>) {
             )
           )
           .otherwise(() => null)}
+
+        {reviewEnabled && review.started ? (
+          <Box
+            sx={{
+              border: `1px solid ${fr.colors.decisions.border.default.grey.default}`,
+              borderRadius: '0.25rem',
+              p: '1rem'
+            }}
+          >
+            <Stack
+              direction="row"
+              spacing="1rem"
+              useFlexGap
+              sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+            >
+              <Box sx={{ flexGrow: 1, minWidth: '12rem' }}>
+                <ReviewProgressBar
+                  value={review.verifiedCount}
+                  total={props.group.housingCount}
+                />
+              </Box>
+              <Button
+                priority="secondary"
+                size="small"
+                onClick={() => navigate(reviewPath)}
+              >
+                Continuer le passage en revue
+              </Button>
+            </Stack>
+          </Box>
+        ) : null}
       </Stack>
 
       <campaignFromGroupModal.Component

@@ -127,7 +127,6 @@ describe('GroupHousingReviewView', () => {
     expect(
       await screen.findByText(/1 logement vérifié sur 2/)
     ).toBeInTheDocument();
-    expect(screen.getAllByText('Vérifié').length).toBeGreaterThan(0);
   });
 
   it('shows a field error when a required sub-status is missing', async () => {

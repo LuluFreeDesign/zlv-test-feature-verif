@@ -40,6 +40,8 @@ export interface HousingOwnerTableProps {
   isLoading: boolean;
   columns?: HousingOwnerTableColumn[];
   empty?: ReactNode;
+  /** Optional action rendered on the same row as the title (e.g. a button). */
+  action?: ReactNode;
   onEdit?(housingOwner: HousingOwner): void;
 }
 
@@ -72,7 +74,7 @@ function HousingOwnerTable(props: HousingOwnerTableProps) {
             multiline: true
           }
         },
-        header: 'Nom et prénom du propriétaire',
+        header: 'Identité propriétaire',
         cell: ({ row }) => (
           <AppLink isSimple size="sm" to={`/proprietaires/${row.original.id}`}>
             {getOwnerDisplayName(row.original)}
@@ -153,9 +155,16 @@ function HousingOwnerTable(props: HousingOwnerTableProps) {
       {props.isLoading ? (
         <Skeleton variant="rectangular" width={240} height={40} />
       ) : (
-        <Typography component="h2" variant="subtitle1">
-          {props.title} ({props.owners.length})
-        </Typography>
+        <Stack
+          direction="row"
+          useFlexGap
+          sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+        >
+          <Typography component="h2" variant="subtitle1">
+            {props.title} ({props.owners.length})
+          </Typography>
+          {props.action}
+        </Stack>
       )}
 
       <AdvancedTable

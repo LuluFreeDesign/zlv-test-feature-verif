@@ -22,9 +22,9 @@ export type OwnerAttachmentModalProps = Omit<
   onConfirm?(): void;
 };
 
-function createOwnerAttachmentModal() {
+function createOwnerAttachmentModal(id = 'owner-attachment-modal') {
   const modal = createExtendedModal({
-    id: 'owner-attachment-modal',
+    id,
     isOpenedByDefault: false
   });
 

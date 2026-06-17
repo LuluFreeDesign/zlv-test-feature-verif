@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import { skipToken } from '@reduxjs/toolkit/query';
 import {
   type EnergyConsumption,
+  ENERGY_CONSUMPTION_VALUES,
   HOUSING_STATUS_VALUES,
   Occupancy,
   OCCUPANCY_VALUES,
@@ -30,15 +31,14 @@ import DPE from '~/components/DPE/DPE';
 import HousingEditionMobilizationTab from '~/components/HousingEdition/HousingEditionMobilizationTab';
 import ReviewHousingList from '~/components/HousingReview/ReviewHousingList';
 import ReviewOwnersSection from '~/components/HousingReview/ReviewOwnersSection';
+import ReviewProgressBar from '~/components/HousingReview/ReviewProgressBar';
 import EnergyConsumptionSelect from '~/components/HousingListFilters/EnergyConsumptionSelect';
 import OccupancySelect from '~/components/HousingListFilters/OccupancySelect';
 import Map from '~/components/Map/Map';
 import AppTextInputNext from '~/components/_app/AppTextInput/AppTextInputNext';
-import GaugeChart from '~/components/ui/GaugeChart/GaugeChart';
 import { useHousingReview } from '~/hooks/useHousingReview';
 import { useNotification } from '~/hooks/useNotification';
 import { HousingStates } from '~/models/HousingState';
-import { useGetBuildingQuery } from '~/services/building.service';
 import { useGetGroupQuery } from '~/services/group.service';
 import {
   useFindHousingQuery,
@@ -96,6 +96,20 @@ const unsavedModal = createModal({
   isOpenedByDefault: false
 });
 
+// Field widths matching the Figma (selects are not full-width).
+const OCCUPANCY_WIDTH = '21rem';
+const STATUS_WIDTH = '24rem';
+const DPE_WIDTH = '18rem';
+
+/** Deterministic fake "représentatif" DPE label per housing (no ADEME data). */
+function fakeRepresentativeDpe(housingId: string): EnergyConsumption {
+  const sum = Array.from(housingId).reduce(
+    (total, char) => total + char.charCodeAt(0),
+    0
+  );
+  return ENERGY_CONSUMPTION_VALUES[sum % ENERGY_CONSUMPTION_VALUES.length];
+}
+
 function GroupHousingReviewView() {
   const { id: groupId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -113,8 +127,6 @@ function GroupHousingReviewView() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const pendingAction = useRef<(() => void) | null>(null);
 
-  // On entry: a review is "started" for this group, and the first housing is
-  // selected by default.
   useEffect(() => {
     if (housings.length > 0 && selectedId === null) {
       startReview();
@@ -128,9 +140,6 @@ function GroupHousingReviewView() {
     (housing) => housing.id === selectedId
   );
 
-  const { data: building } = useGetBuildingQuery(
-    selectedHousing?.buildingId ?? skipToken
-  );
   const { data: housingPrecisions } = useFindPrecisionsByHousingQuery(
     selectedHousing ? { housingId: selectedHousing.id } : skipToken
   );
@@ -220,7 +229,6 @@ function GroupHousingReviewView() {
 
     markVerified(selectedHousing.id);
 
-    // Advance to the next housing, if any.
     if (selectedIndex >= 0 && selectedIndex < housings.length - 1) {
       goToIndex(selectedIndex + 1);
     }
@@ -235,6 +243,7 @@ function GroupHousingReviewView() {
   const streetViewUrl = selectedHousing
     ? `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${selectedHousing.latitude},${selectedHousing.longitude}`
     : undefined;
+  const separatorBorder = `1px solid ${fr.colors.decisions.border.default.grey.default}`;
 
   return (
     <Box sx={{ px: '1.5rem', py: '1.5rem' }}>
@@ -251,7 +260,12 @@ function GroupHousingReviewView() {
         direction="row"
         spacing="1rem"
         useFlexGap
-        sx={{ alignItems: 'center', justifyContent: 'space-between', mb: '1rem' }}
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          mb: '0.25rem'
+        }}
       >
         <Typography component="h1" variant="h4">
           Passer en revue les logements
@@ -265,19 +279,11 @@ function GroupHousingReviewView() {
         direction="row"
         spacing="1rem"
         useFlexGap
-        sx={{ alignItems: 'center', mb: '1.5rem' }}
+        sx={{ alignItems: 'center', flexWrap: 'wrap', mb: '1.5rem' }}
       >
-        <Stack spacing="0.25rem" useFlexGap sx={{ flexGrow: 1 }}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            {verifiedCount} logement{verifiedCount > 1 ? 's' : ''} vérifié
-            {verifiedCount > 1 ? 's' : ''} sur {housings.length}
-          </Typography>
-          <GaugeChart
-            value={verifiedCount}
-            target={housings.length}
-            legend={false}
-          />
-        </Stack>
+        <Box sx={{ flexGrow: 1, minWidth: '14rem' }}>
+          <ReviewProgressBar value={verifiedCount} total={housings.length} />
+        </Box>
         <Button
           priority="tertiary"
           iconId="fr-icon-arrow-up-s-line"
@@ -304,7 +310,10 @@ function GroupHousingReviewView() {
 
       <Grid container columnSpacing="1.5rem">
         {/* Left column: housings to review */}
-        <Grid size={{ xs: 12, md: 3 }}>
+        <Grid
+          size={{ xs: 12, md: 3 }}
+          sx={{ borderRight: { md: separatorBorder }, pr: { md: '1rem' } }}
+        >
           <Typography component="h2" variant="h6" sx={{ mb: '0.5rem' }}>
             Logements à vérifier
           </Typography>
@@ -320,7 +329,7 @@ function GroupHousingReviewView() {
           )}
         </Grid>
 
-        {/* Center column: owners + occupation & follow-up */}
+        {/* Center column: address, owners, occupation & follow-up */}
         <Grid size={{ xs: 12, md: 5 }}>
           {selectedHousing ? (
             <FormProvider {...form}>
@@ -331,7 +340,7 @@ function GroupHousingReviewView() {
                   useFlexGap
                   sx={{ alignItems: 'center' }}
                 >
-                  <Typography component="h2" variant="h5">
+                  <Typography component="h2" variant="h4">
                     {housingAddress}
                   </Typography>
                   {isVerified(selectedHousing.id) ? (
@@ -344,39 +353,45 @@ function GroupHousingReviewView() {
                 <ReviewOwnersSection housing={selectedHousing} />
 
                 <Stack component="section" spacing="1rem" useFlexGap>
-                  <Typography component="h2" variant="h6">
+                  <Typography component="h3" variant="h6">
                     Occupation et suivi
                   </Typography>
 
-                  <Controller<ReviewFormSchema, 'occupancy'>
-                    name="occupancy"
-                    render={({ field, fieldState }) => (
-                      <OccupancySelect
-                        label="Occupation actuelle"
-                        disabled={field.disabled}
-                        error={fieldState.error?.message}
-                        invalid={fieldState.invalid}
-                        value={field.value as Occupancy}
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
+                  <Box sx={{ maxWidth: OCCUPANCY_WIDTH }}>
+                    <Controller<ReviewFormSchema, 'occupancy'>
+                      name="occupancy"
+                      render={({ field, fieldState }) => (
+                        <OccupancySelect
+                          label="Occupation actuelle"
+                          disabled={field.disabled}
+                          error={fieldState.error?.message}
+                          invalid={fieldState.invalid}
+                          value={field.value as Occupancy}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </Box>
 
-                  <Controller<ReviewFormSchema, 'occupancyIntended'>
-                    name="occupancyIntended"
-                    render={({ field, fieldState }) => (
-                      <OccupancySelect
-                        label="Occupation prévisionnelle"
-                        disabled={field.disabled}
-                        error={fieldState.error?.message}
-                        invalid={fieldState.invalid}
-                        value={field.value as Occupancy | null}
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
+                  <Box sx={{ maxWidth: OCCUPANCY_WIDTH }}>
+                    <Controller<ReviewFormSchema, 'occupancyIntended'>
+                      name="occupancyIntended"
+                      render={({ field, fieldState }) => (
+                        <OccupancySelect
+                          label="Occupation prévisionnelle"
+                          disabled={field.disabled}
+                          error={fieldState.error?.message}
+                          invalid={fieldState.invalid}
+                          value={field.value as Occupancy | null}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </Box>
 
-                  <HousingEditionMobilizationTab />
+                  <Box sx={{ maxWidth: STATUS_WIDTH }}>
+                    <HousingEditionMobilizationTab />
+                  </Box>
                 </Stack>
               </Stack>
             </FormProvider>
@@ -405,7 +420,11 @@ function GroupHousingReviewView() {
                   />
                   {streetViewUrl ? (
                     <Typography sx={{ mt: '0.5rem', textAlign: 'right' }}>
-                      <a href={streetViewUrl} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={streetViewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         Voir le bâtiment
                       </a>
                     </Typography>
@@ -425,31 +444,29 @@ function GroupHousingReviewView() {
                   <Typography sx={{ fontWeight: 500 }}>
                     Étiquette DPE représentatif (source : ADEME)
                   </Typography>
-                  {building?.dpe?.class ? (
-                    <DPE value={building.dpe.class} />
-                  ) : (
-                    <Typography
-                      sx={{
-                        color: fr.colors.decisions.text.mention.grey.default
-                      }}
-                    >
-                      Pas d’information
-                    </Typography>
-                  )}
+                  <Typography
+                    variant="caption"
+                    sx={{ color: fr.colors.decisions.text.mention.grey.default }}
+                  >
+                    Issue du DPE le plus récent du bâtiment
+                  </Typography>
+                  <DPE value={fakeRepresentativeDpe(selectedHousing.id)} />
                 </Stack>
 
-                <Controller<ReviewFormSchema, 'actualEnergyConsumption'>
-                  name="actualEnergyConsumption"
-                  render={({ field, fieldState }) => (
-                    <EnergyConsumptionSelect
-                      label="Étiquette DPE renseignée"
-                      disabled={field.disabled}
-                      error={fieldState.error?.message}
-                      value={field.value as EnergyConsumption | null}
-                      onChange={field.onChange}
-                    />
-                  )}
-                />
+                <Box sx={{ maxWidth: DPE_WIDTH }}>
+                  <Controller<ReviewFormSchema, 'actualEnergyConsumption'>
+                    name="actualEnergyConsumption"
+                    render={({ field, fieldState }) => (
+                      <EnergyConsumptionSelect
+                        label="Étiquette DPE renseignée"
+                        disabled={field.disabled}
+                        error={fieldState.error?.message}
+                        value={field.value as EnergyConsumption | null}
+                        onChange={field.onChange}
+                      />
+                    )}
+                  />
+                </Box>
               </Stack>
             </FormProvider>
           ) : null}
