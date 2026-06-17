@@ -36,6 +36,10 @@ const EVENT_TYPE_VALUES = [
   {
     value: 'event',
     label: 'Mise à jour'
+  },
+  {
+    value: 'verification',
+    label: 'Vérification'
   }
 ] as const;
 type EventType = (typeof EVENT_TYPE_VALUES)[number];
@@ -267,11 +271,26 @@ function byTypes(types: ReadonlyArray<EventType>) {
       return true; // No filter, include all events/notes
     }
 
-    if (types.map((type) => type.value).includes('event') && isEvent(event)) {
+    const values = types.map((type) => type.value);
+
+    if (
+      values.includes('verification') &&
+      isEvent(event) &&
+      event.type === 'housing:verified'
+    ) {
       return true;
     }
 
-    if (types.map((type) => type.value).includes('note') && isNote(event)) {
+    // "Mise à jour" covers every event except the dedicated verification one.
+    if (
+      values.includes('event') &&
+      isEvent(event) &&
+      event.type !== 'housing:verified'
+    ) {
+      return true;
+    }
+
+    if (values.includes('note') && isNote(event)) {
       return true;
     }
 

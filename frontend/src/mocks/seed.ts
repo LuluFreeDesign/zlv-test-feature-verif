@@ -29,23 +29,30 @@ import data from './handlers/data';
 export const DEMO_EMAIL = 'demo@zerologementvacant.beta.gouv.fr';
 
 /**
- * Communes of Lorient Agglomération (INSEE geo code → label) so every housing
- * belongs to the same EPCI.
+ * Savennières — commune d'Angers Loire Métropole (ALM) où sont localisés tous
+ * les logements de la démo. Les rues sont réelles ; le reste est fictif.
  */
-const LORIENT_AGGLO_COMMUNES: Record<
-  string,
-  { name: string; postalCode: string }
-> = {
-  '56121': { name: 'Lorient', postalCode: '56100' },
-  '56098': { name: 'Lanester', postalCode: '56600' },
-  '56083': { name: 'Hennebont', postalCode: '56700' },
-  '56162': { name: 'Ploemeur', postalCode: '56270' },
-  '56185': { name: 'Quéven', postalCode: '56530' },
-  '56036': { name: 'Caudan', postalCode: '56850' },
-  '56107': { name: 'Larmor-Plage', postalCode: '56260' },
-  '56078': { name: 'Guidel', postalCode: '56520' }
+const SAVENNIERES = {
+  geoCode: '49328',
+  postalCode: '49170',
+  city: 'Savennières',
+  // Centre approximatif de la commune, pour positionner les logements sur la carte.
+  center: { latitude: 47.3828, longitude: -0.6212 }
 };
-const LORIENT_GEO_CODES = Object.keys(LORIENT_AGGLO_COMMUNES);
+const SAVENNIERES_STREETS = [
+  'Rue du Maine',
+  'Place du Mail',
+  'Rue d’Épiré',
+  'Rue de la Roche aux Moines',
+  'Chemin de la Coulée de Serrant',
+  'Route de la Possonnière',
+  'Rue des Vignes',
+  'Rue de la Loire',
+  'Rue de la Mairie',
+  'Le Bourg',
+  'Rue du Pré',
+  'Impasse des Tisserands'
+];
 const LOVAC_YEARS: DataFileYear[] = [
   'lovac-2026',
   'lovac-2025',
@@ -76,10 +83,10 @@ export function seed(): DemoSeed {
   // --- Establishment -------------------------------------------------------
   const establishment: EstablishmentDTO = {
     ...genEstablishmentDTO(),
-    name: 'Lorient Agglomération',
-    shortName: 'Lorient Agglo',
-    siren: '200042174',
-    geoCodes: LORIENT_GEO_CODES,
+    name: 'Angers Loire Métropole',
+    shortName: 'ALM',
+    siren: '244900015',
+    geoCodes: [SAVENNIERES.geoCode],
     available: true
   };
   data.establishments.push(establishment);
@@ -104,9 +111,9 @@ export function seed(): DemoSeed {
   // --- Housings (+ owners with ranks per housing) --------------------------
   const housings: HousingDTO[] = [];
   for (let index = 0; index < 32; index++) {
-    const geoCode = LORIENT_GEO_CODES[index % LORIENT_GEO_CODES.length];
-    const commune = LORIENT_AGGLO_COMMUNES[geoCode];
-    const base = genHousingDTO(geoCode);
+    const base = genHousingDTO(SAVENNIERES.geoCode);
+    const street = faker.helpers.arrayElement(SAVENNIERES_STREETS);
+    const houseNumber = faker.number.int({ min: 1, max: 60 });
 
     // Most housings are vacant (LOVAC source); a minority are rented (fichiers
     // fonciers 2023) without an intended occupancy.
@@ -114,7 +121,17 @@ export function seed(): DemoSeed {
     const lovacYear = faker.helpers.arrayElement(LOVAC_YEARS);
     const housing: HousingDTO = {
       ...base,
-      rawAddress: [base.rawAddress[0], `${commune.postalCode} ${commune.name}`],
+      rawAddress: [
+        `${houseNumber} ${street}`,
+        `${SAVENNIERES.postalCode} ${SAVENNIERES.city}`
+      ],
+      // Real-ish coordinates around Savennières so the map shows the right place.
+      latitude:
+        SAVENNIERES.center.latitude +
+        faker.number.float({ min: -0.012, max: 0.012, fractionDigits: 5 }),
+      longitude:
+        SAVENNIERES.center.longitude +
+        faker.number.float({ min: -0.018, max: 0.018, fractionDigits: 5 }),
       occupancy: isRental ? Occupancy.RENT : Occupancy.VACANT,
       occupancyIntended: null,
       dataFileYears: isRental ? ['ff-2023'] : [lovacYear],
@@ -146,8 +163,17 @@ export function seed(): DemoSeed {
   // --- Groups --------------------------------------------------------------
   const groupHousingsA = housings.slice(0, 8);
   const groupHousingsB = housings.slice(8, 14);
-  const groupA: GroupDTO = genGroupDTO(currentUser, groupHousingsA);
-  const groupB: GroupDTO = genGroupDTO(currentUser, groupHousingsB);
+  const groupA: GroupDTO = {
+    ...genGroupDTO(currentUser, groupHousingsA),
+    title: 'OPAH-RU',
+    description:
+      'Opération programmée d’amélioration de l’habitat – renouvellement urbain'
+  };
+  const groupB: GroupDTO = {
+    ...genGroupDTO(currentUser, groupHousingsB),
+    title: 'Centre-bourg',
+    description: 'Logements vacants du centre-bourg'
+  };
   data.groups.push(groupA, groupB);
   data.groupHousings.set(
     groupA.id,

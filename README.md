@@ -20,7 +20,7 @@ tester de nouvelles fonctionnalités à des usagers.
 
 | Fichier | Rôle |
 |---|---|
-| `frontend/src/mocks/seed.ts` | Injecte un graphe cohérent de fausses données : **Lorient Agglomération**, ~30 logements (majorité vacants/LOVAC 2023–2026, minorité en location/FF 2023), propriétaires, groupes, campagne, notes. Seed faker **déterministe** → données reproductibles. |
+| `frontend/src/mocks/seed.ts` | Injecte un graphe cohérent de fausses données : **Angers Loire Métropole**, logements sur la commune de **Savennières** (rues + coordonnées réelles), ~30 logements (majorité vacants/LOVAC 2023–2026, minorité en location/FF 2023), propriétaires, groupes, campagne, notes. Seed faker **déterministe** → données reproductibles. |
 | `frontend/src/mocks/browser.ts` | Démarre MSW en mode navigateur (`setupWorker`). |
 | `frontend/src/mocks/demo-handlers.ts` | Override du login : **n'importe quel identifiant** fonctionne, renvoie un vrai JWT. |
 | `frontend/src/mocks/start.ts` | Orchestration : seed → **auto-login** (écrit `authUser` dans le localStorage) → démarre le worker. |

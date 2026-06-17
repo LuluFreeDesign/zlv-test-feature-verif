@@ -11,9 +11,9 @@ Mémo des décisions structurantes et des pièges rencontrés, pour reprendre vi
 - **Auto-login** : on écrit un `authUser` valide (avec un JWT signé par un shim) dans le localStorage
   avant l'init du store.
 - **Déploiement** : GitHub Pages, base path `/zlv-test-feature-verif/`, fallback SPA via `404.html`.
-- **Seed** : établissement **Lorient Agglomération** (codes INSEE réels), majorité de logements
-  **vacants** (LOVAC 2023–2026), minorité **en location** (fichiers fonciers 2023, sans occupation
-  prévisionnelle).
+- **Seed** : établissement **Angers Loire Métropole** ; logements sur la commune de **Savennières**
+  (rues réelles + coordonnées réelles pour la carte), majorité **vacants** (LOVAC 2023–2026),
+  minorité **en location** (fichiers fonciers 2023, sans occupation prévisionnelle).
 - **Feature flag** : `group-housing-review` (dans `frontend/.env`).
 
 ## Pièges résolus (à ne pas refaire)
