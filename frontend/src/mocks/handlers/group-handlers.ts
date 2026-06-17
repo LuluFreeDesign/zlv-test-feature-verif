@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker/locale/fr';
 import type { GroupDTO, GroupPayloadDTO } from '@zerologementvacant/models';
 import { genGroupDTO } from '@zerologementvacant/models/fixtures';
 import { Array, Record } from 'effect';
@@ -6,6 +5,7 @@ import { http, HttpResponse, RequestHandler } from 'msw';
 import { constants } from 'node:http2';
 
 import config from '../../utils/config';
+import { decodeAuth } from './auth-helpers';
 import data from './data';
 
 type GroupParams = {
@@ -24,13 +24,30 @@ export const groupHandlers: RequestHandler[] = [
   // Create a group
   http.post<Record<string, never>, GroupPayloadDTO, GroupDTO>(
     `${config.apiEndpoint}/groups`,
-    () => {
-      const creator = faker.helpers.arrayElement(data.users);
-      // TODO: use request payload
-      const housings = faker.helpers.arrayElements(data.housings);
-      const group = genGroupDTO(creator, housings);
+    async ({ request }) => {
+      const payload = await request.json();
+      const auth = decodeAuth(request);
+      const creator =
+        data.users.find((user) => user.id === auth?.user.id) ?? data.users[0];
+
+      // Use the housings the user actually selected. `all` means "everything
+      // matching the current filter except the listed ids" (deselection).
+      const ids = new Set(payload.housing?.ids ?? []);
+      const all = payload.housing?.all ?? false;
+      const housings = all
+        ? data.housings.filter((housing) => !ids.has(housing.id))
+        : data.housings.filter((housing) => ids.has(housing.id));
+
+      const group: GroupDTO = {
+        ...genGroupDTO(creator, housings),
+        title: payload.title,
+        description: payload.description
+      };
       data.groups.push(group);
-      data.groupHousings.set(group.id, housings);
+      data.groupHousings.set(
+        group.id,
+        housings.map((housing) => ({ id: housing.id }))
+      );
 
       return HttpResponse.json(group, {
         status: constants.HTTP_STATUS_CREATED

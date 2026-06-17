@@ -44,9 +44,10 @@ Le workflow passe `VITE_BASE_PATH=/zlv-test-feature-verif/`.
 - Flag `VITE_DEMO_MODE=true` (dans `frontend/.env`, committé) → `frontend/src/index.tsx` démarre MSW
   **dans le navigateur**, seed les données, puis fait l'auto-login **avant** d'importer le store.
 - `frontend/src/mocks/` :
-  - `seed.ts` — jeu de fausses données **déterministe** (faker seedé). Établissement = **Lorient
-    Agglomération**, ~30 logements (majorité vacants/LOVAC, minorité en location/FF 2023), propriétaires,
-    groupes, campagne, notes.
+  - `seed.ts` — jeu de fausses données **déterministe** (faker seedé). Établissement = **Angers Loire
+    Métropole** ; logements localisés sur la commune de **Savennières** (rues réelles + coordonnées
+    réelles pour la carte), ~30 logements (majorité vacants/LOVAC, minorité en location/FF 2023),
+    propriétaires, groupes, campagne, notes.
   - `browser.ts` — `setupWorker(...demoHandlers, ...handlers)`.
   - `start.ts` — seed → écrit `authUser` (localStorage) → `worker.start()`.
   - `handlers/` — handlers MSW (réutilisés des tests) + `data.ts` (store en mémoire).
