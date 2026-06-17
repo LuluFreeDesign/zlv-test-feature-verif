@@ -83,7 +83,7 @@ export function seed(): DemoSeed {
   // --- Establishment -------------------------------------------------------
   const establishment: EstablishmentDTO = {
     ...genEstablishmentDTO(),
-    name: 'Angers Loire Métropole',
+    name: 'Test Angers Loire Métropole',
     shortName: 'ALM',
     siren: '244900015',
     geoCodes: [SAVENNIERES.geoCode],
@@ -95,8 +95,8 @@ export function seed(): DemoSeed {
   const currentUser: UserDTO = {
     ...genUserDTO(UserRole.USUAL, { id: establishment.id }),
     email: DEMO_EMAIL,
-    firstName: 'Camille',
-    lastName: 'Démonstration'
+    firstName: 'Démonstrat',
+    lastName: 'ZLV'
   };
   const colleagues = Array.from({ length: 3 }, () =>
     genUserDTO(UserRole.USUAL, { id: establishment.id })
