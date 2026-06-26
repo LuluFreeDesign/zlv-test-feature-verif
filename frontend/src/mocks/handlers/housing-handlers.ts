@@ -27,6 +27,7 @@ interface HousingQueryParams {
   campaignIds?: string;
   groupIds?: string;
   housingKinds?: string;
+  localities?: string;
   occupancies?: string;
   relativeLocations?: string;
   status?: string;
@@ -52,6 +53,9 @@ function parseQueryParams(url: URL): FilterParams {
     housingKinds: params.housingKinds
       ? new Set(params.housingKinds.split(','))
       : undefined,
+    localities: params.localities
+      ? new Set(params.localities.split(','))
+      : undefined,
     occupancies: params.occupancies
       ? new Set(params.occupancies.split(','))
       : undefined,
@@ -72,6 +76,7 @@ const find = http.get<
     campaignIds,
     groupIds,
     housingKinds,
+    localities,
     occupancies,
     relativeLocations,
     statuses
@@ -95,6 +100,7 @@ const find = http.get<
       campaignIds,
       groupIds,
       housingKinds,
+      localities,
       occupancies,
       statuses,
       relativeLocations
@@ -370,6 +376,7 @@ interface FilterParams {
   campaignIds?: Set<string>;
   groupIds?: Set<string>;
   housingKinds?: Set<string>;
+  localities?: Set<string>;
   occupancies?: Set<string>;
   statuses?: Set<number>;
   relativeLocations?: Set<string>;
@@ -410,6 +417,12 @@ export function byOccupancy(
   return (housing) => occupancies.has(housing.occupancy);
 }
 
+export function byLocality(
+  localities: Set<string>
+): Predicate.Predicate<HousingDTO> {
+  return (housing) => localities.has(housing.geoCode);
+}
+
 export function byRelativeLocation(
   locations: Set<string>
 ): Predicate.Predicate<HousingDTO> {
@@ -433,6 +446,7 @@ export function filter(params: FilterParams) {
     params.campaignIds ? byCampaign(params.campaignIds) : null,
     params.groupIds ? byGroup(params.groupIds) : null,
     params.housingKinds ? byKind(params.housingKinds) : null,
+    params.localities ? byLocality(params.localities) : null,
     params.occupancies ? byOccupancy(params.occupancies) : null,
     params.statuses ? byStatus(params.statuses) : null,
     params.relativeLocations
