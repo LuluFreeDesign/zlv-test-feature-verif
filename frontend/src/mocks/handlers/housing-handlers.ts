@@ -27,6 +27,7 @@ interface HousingQueryParams {
   campaignIds?: string;
   groupIds?: string;
   housingKinds?: string;
+  occupancies?: string;
   relativeLocations?: string;
   status?: string;
   statusList?: string;
@@ -51,6 +52,9 @@ function parseQueryParams(url: URL): FilterParams {
     housingKinds: params.housingKinds
       ? new Set(params.housingKinds.split(','))
       : undefined,
+    occupancies: params.occupancies
+      ? new Set(params.occupancies.split(','))
+      : undefined,
     relativeLocations: params.relativeLocations
       ? new Set(params.relativeLocations.split(','))
       : undefined,
@@ -64,8 +68,14 @@ const find = http.get<
   Paginated<HousingDTO>
 >(`${config.apiEndpoint}/housing`, async ({ request }) => {
   const url = new URL(request.url);
-  const { campaignIds, groupIds, housingKinds, relativeLocations, statuses } =
-    parseQueryParams(url);
+  const {
+    campaignIds,
+    groupIds,
+    housingKinds,
+    occupancies,
+    relativeLocations,
+    statuses
+  } = parseQueryParams(url);
 
   const subset = pipe(
     data.housings,
@@ -81,15 +91,29 @@ const find = http.get<
         owner: mainOwner
       };
     }),
-    filter({ campaignIds, groupIds, housingKinds, statuses, relativeLocations })
+    filter({
+      campaignIds,
+      groupIds,
+      housingKinds,
+      occupancies,
+      statuses,
+      relativeLocations
+    })
   );
 
+  // Server-side pagination, so the list pager behaves correctly with hundreds
+  // of housings.
+  const page = Number(url.searchParams.get('page')) || 1;
+  const perPage = Number(url.searchParams.get('perPage')) || 50;
+  const start = (page - 1) * perPage;
+  const entities = subset.slice(start, start + perPage);
+
   return HttpResponse.json({
-    page: 1,
-    perPage: 50,
+    page,
+    perPage,
     filteredCount: subset.length,
     totalCount: data.housings.length,
-    entities: subset
+    entities
   });
 });
 
@@ -346,6 +370,7 @@ interface FilterParams {
   campaignIds?: Set<string>;
   groupIds?: Set<string>;
   housingKinds?: Set<string>;
+  occupancies?: Set<string>;
   statuses?: Set<number>;
   relativeLocations?: Set<string>;
 }
@@ -379,6 +404,12 @@ export function byStatus(
   return (housing) => statuses.has(housing.status);
 }
 
+export function byOccupancy(
+  occupancies: Set<string>
+): Predicate.Predicate<HousingDTO> {
+  return (housing) => occupancies.has(housing.occupancy);
+}
+
 export function byRelativeLocation(
   locations: Set<string>
 ): Predicate.Predicate<HousingDTO> {
@@ -402,6 +433,7 @@ export function filter(params: FilterParams) {
     params.campaignIds ? byCampaign(params.campaignIds) : null,
     params.groupIds ? byGroup(params.groupIds) : null,
     params.housingKinds ? byKind(params.housingKinds) : null,
+    params.occupancies ? byOccupancy(params.occupancies) : null,
     params.statuses ? byStatus(params.statuses) : null,
     params.relativeLocations
       ? byRelativeLocation(params.relativeLocations)
