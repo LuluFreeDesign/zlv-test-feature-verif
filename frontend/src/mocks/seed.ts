@@ -291,6 +291,21 @@ export function seed(): DemoSeed {
   }
   data.housings.push(...housings);
 
+  // --- Localities (commune filter) -----------------------------------------
+  // Register a locality only for communes that actually have housings, so the
+  // commune filter lists exactly the communes present in the data.
+  const usedGeoCodes = new Set(housings.map((housing) => housing.geoCode));
+  EPCI_COMMUNES.filter((commune) => usedGeoCodes.has(commune.geoCode)).forEach(
+    (commune) => {
+      data.localities.set(commune.geoCode, {
+        geoCode: commune.geoCode,
+        name: commune.city,
+        kind: null,
+        taxKind: 'None'
+      });
+    }
+  );
+
   // --- Groups --------------------------------------------------------------
   const groupHousingsA = housings.slice(0, 12);
   const groupHousingsB = housings.slice(12, 20);
