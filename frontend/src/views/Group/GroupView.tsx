@@ -120,12 +120,26 @@ function GroupView() {
     }
   });
 
-  const onGroupExport: GroupProps['onExport'] = () => {
-    if (group) {
-      const token = authService.authHeader()?.['x-access-token'];
-      const url = `${config.apiEndpoint}/groups/${group.id}/export?x-access-token=${token}`;
-      window.open(url, '_self');
+  const onGroupExport: GroupProps['onExport'] = async () => {
+    if (!group) {
+      return;
     }
+    // The MSW service worker bypasses navigation requests, so we fetch the
+    // export (intercepted by MSW) and trigger the download client-side instead
+    // of navigating with window.open.
+    const response = await fetch(
+      `${config.apiEndpoint}/groups/${group.id}/export`,
+      { headers: authService.authHeader() ?? undefined }
+    );
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `export-groupe-${group.title}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   };
 
   const [updateGroup, updateGroupMutation] = useUpdateGroupMutation();

@@ -1,4 +1,8 @@
-import type { GroupDTO, GroupPayloadDTO } from '@zerologementvacant/models';
+import {
+  type GroupDTO,
+  type GroupPayloadDTO,
+  OCCUPANCY_LABELS
+} from '@zerologementvacant/models';
 import { genGroupDTO } from '@zerologementvacant/models/fixtures';
 import { Array, Record } from 'effect';
 import { http, HttpResponse, RequestHandler } from 'msw';
@@ -117,6 +121,63 @@ export const groupHandlers: RequestHandler[] = [
       ]);
       return HttpResponse.json(null, {
         status: constants.HTTP_STATUS_OK
+      });
+    }
+  ),
+
+  // Export a group's housings. The UI navigates to this URL (window.open), so
+  // returning a file with an attachment disposition triggers a download instead
+  // of a 404.
+  http.get<GroupParams, never>(
+    `${config.apiEndpoint}/groups/:id/export`,
+    ({ params }) => {
+      const group = data.groups.find((group) => group.id === params.id);
+      if (!group) {
+        return HttpResponse.json(null, {
+          status: constants.HTTP_STATUS_NOT_FOUND
+        });
+      }
+
+      const ids = new Set(
+        (data.groupHousings.get(group.id) ?? []).map((housing) => housing.id)
+      );
+      const housings = data.housings.filter((housing) => ids.has(housing.id));
+
+      const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
+      const header = [
+        'Adresse',
+        'Localité',
+        'Code INSEE',
+        'Occupation',
+        'Propriétaire principal'
+      ];
+      const lines = housings.map((housing) => {
+        const mainHousingOwner =
+          data.housingOwners
+            .get(housing.id)
+            ?.find((housingOwner) => housingOwner.rank === 1) ?? null;
+        const mainOwner =
+          data.owners.find((owner) => owner.id === mainHousingOwner?.id) ?? null;
+        const [line1 = '', line2 = ''] = housing.rawAddress ?? [];
+        return [
+          line1,
+          line2,
+          housing.geoCode,
+          OCCUPANCY_LABELS[housing.occupancy] ?? housing.occupancy,
+          mainOwner?.fullName ?? ''
+        ]
+          .map(escape)
+          .join(';');
+      });
+      // UTF-8 BOM so Excel opens accents correctly.
+      const csv = '﻿' + [header.map(escape).join(';'), ...lines].join('\n');
+
+      return new HttpResponse(csv, {
+        status: constants.HTTP_STATUS_OK,
+        headers: {
+          'Content-Type': 'text/csv;charset=utf-8',
+          'Content-Disposition': `attachment; filename="export-groupe-${group.id}.csv"`
+        }
       });
     }
   ),
