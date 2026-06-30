@@ -25,6 +25,8 @@ import data from './data';
 
 interface HousingQueryParams {
   campaignIds?: string;
+  dataFileYearsIncluded?: string;
+  dataFileYearsExcluded?: string;
   groupIds?: string;
   housingKinds?: string;
   localities?: string;
@@ -46,6 +48,12 @@ function parseQueryParams(url: URL): FilterParams {
   return {
     campaignIds: params.campaignIds
       ? new Set(params.campaignIds.split(','))
+      : undefined,
+    dataFileYearsIncluded: params.dataFileYearsIncluded
+      ? new Set(params.dataFileYearsIncluded.split(','))
+      : undefined,
+    dataFileYearsExcluded: params.dataFileYearsExcluded
+      ? new Set(params.dataFileYearsExcluded.split(','))
       : undefined,
     groupIds: params.groupIds
       ? new Set(params.groupIds.split(','))
@@ -74,6 +82,8 @@ const find = http.get<
   const url = new URL(request.url);
   const {
     campaignIds,
+    dataFileYearsIncluded,
+    dataFileYearsExcluded,
     groupIds,
     housingKinds,
     localities,
@@ -98,6 +108,8 @@ const find = http.get<
     }),
     filter({
       campaignIds,
+      dataFileYearsIncluded,
+      dataFileYearsExcluded,
       groupIds,
       housingKinds,
       localities,
@@ -374,6 +386,8 @@ export function filterByHousingIds(
 
 interface FilterParams {
   campaignIds?: Set<string>;
+  dataFileYearsIncluded?: Set<string>;
+  dataFileYearsExcluded?: Set<string>;
   groupIds?: Set<string>;
   housingKinds?: Set<string>;
   localities?: Set<string>;
@@ -423,6 +437,20 @@ export function byLocality(
   return (housing) => localities.has(housing.geoCode);
 }
 
+export function byDataFileYearsIncluded(
+  years: Set<string>
+): Predicate.Predicate<HousingDTO> {
+  return (housing) =>
+    (housing.dataFileYears ?? []).some((year) => years.has(year));
+}
+
+export function byDataFileYearsExcluded(
+  years: Set<string>
+): Predicate.Predicate<HousingDTO> {
+  return (housing) =>
+    !(housing.dataFileYears ?? []).some((year) => years.has(year));
+}
+
 export function byRelativeLocation(
   locations: Set<string>
 ): Predicate.Predicate<HousingDTO> {
@@ -444,6 +472,12 @@ export function byRelativeLocation(
 export function filter(params: FilterParams) {
   const predicates: Predicate.Predicate<HousingDTO>[] = [
     params.campaignIds ? byCampaign(params.campaignIds) : null,
+    params.dataFileYearsIncluded
+      ? byDataFileYearsIncluded(params.dataFileYearsIncluded)
+      : null,
+    params.dataFileYearsExcluded
+      ? byDataFileYearsExcluded(params.dataFileYearsExcluded)
+      : null,
     params.groupIds ? byGroup(params.groupIds) : null,
     params.housingKinds ? byKind(params.housingKinds) : null,
     params.localities ? byLocality(params.localities) : null,

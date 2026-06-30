@@ -42,6 +42,7 @@ import data from '~/mocks/handlers/data';
 import { fromEstablishmentDTO } from '~/models/Establishment';
 import { fromUserDTO } from '~/models/User';
 import { genAuthUser } from '~/test/fixtures';
+import housingSlice from '~/store/reducers/housingReducer';
 import configureTestStore from '~/utils/storeUtils';
 import CampaignView from '~/views/Campaign/CampaignView';
 import HousingListTabsProvider from '~/views/HousingList/HousingListTabsProvider';
@@ -95,6 +96,10 @@ describe('Housing list view', () => {
         fromEstablishmentDTO(options.establishment)
       )
     });
+    // The mock now honours the dataFileYears filter; clear the default
+    // (lovac-2026) so these tests see all the housings they seed regardless of
+    // each fixture's random dataFileYears.
+    store.dispatch(housingSlice.actions.changeFilters({}));
     const router = createMemoryRouter(
       [
         {

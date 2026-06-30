@@ -1,7 +1,6 @@
 import { faker } from '@faker-js/faker/locale/fr';
 import {
   type CampaignDTO,
-  type DataFileYear,
   type EstablishmentDTO,
   type GroupDTO,
   type HousingDTO,
@@ -107,13 +106,6 @@ const STREETS = [
   'Rue du Moulin'
 ];
 
-const LOVAC_YEARS: DataFileYear[] = [
-  'lovac-2026',
-  'lovac-2025',
-  'lovac-2024',
-  'lovac-2023'
-];
-
 export interface DemoSeed {
   currentUser: UserDTO;
   establishment: EstablishmentDTO;
@@ -185,7 +177,6 @@ export function seed(): DemoSeed {
       { weight: 25, value: Occupancy.RENT }
     ]);
     const isVacant = occupancy === Occupancy.VACANT;
-    const lovacYear = faker.helpers.arrayElement(LOVAC_YEARS);
 
     const housing: HousingDTO = {
       ...base,
@@ -206,8 +197,10 @@ export function seed(): DemoSeed {
       // Every housing starts as "Non suivi" (no sub-status).
       status: HousingStatus.NEVER_CONTACTED,
       subStatus: null,
-      dataFileYears: isVacant ? [lovacYear] : ['ff-2023'],
-      dataYears: isVacant ? [Number(lovacYear.slice('lovac-'.length))] : [2023],
+      // LOVAC 2026 for vacant housings (so they match the default
+      // "LOVAC 2026" filter), fichiers fonciers 2023 for rented ones.
+      dataFileYears: isVacant ? ['lovac-2026'] : ['ff-2023'],
+      dataYears: isVacant ? [2026] : [2023],
       source: isVacant ? 'lovac' : 'datafoncier-import'
     };
     housings.push(housing);
