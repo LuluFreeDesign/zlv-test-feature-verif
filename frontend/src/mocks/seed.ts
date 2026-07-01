@@ -177,15 +177,15 @@ export function seed(): DemoSeed {
       { weight: 25, value: Occupancy.RENT }
     ]);
     const isVacant = occupancy === Occupancy.VACANT;
-    // Rented housings come from the fichiers fonciers, split between 2023 and
-    // 2024 so the environment has "En location" housings in both millésimes.
-    const rentFileYear: 'ff-2023' | 'ff-2024' = faker.helpers.weightedArrayElement(
-      [
-        { weight: 65, value: 'ff-2023' as const },
-        { weight: 35, value: 'ff-2024' as const }
-      ]
-    );
-    const rentDataYear = rentFileYear === 'ff-2024' ? 2024 : 2023;
+    // Rented housings come from the fichiers fonciers ("locatif" variant, which
+    // is what the "Fichiers fonciers … (en location)" source filter matches),
+    // split between 2023 and 2024 so both millésimes are represented.
+    const rentFileYear: 'ff-2023-locatif' | 'ff-2024-locatif' =
+      faker.helpers.weightedArrayElement([
+        { weight: 65, value: 'ff-2023-locatif' as const },
+        { weight: 35, value: 'ff-2024-locatif' as const }
+      ]);
+    const rentDataYear = rentFileYear === 'ff-2024-locatif' ? 2024 : 2023;
 
     const housing: HousingDTO = {
       ...base,
