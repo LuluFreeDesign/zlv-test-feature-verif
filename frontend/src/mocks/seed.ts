@@ -30,11 +30,11 @@ export const DEMO_EMAIL = 'demo@zerologementvacant.beta.gouv.fr';
 
 /**
  * Number of housings to generate, spread across every commune of the EPCI
- * (weighted by population, so Douai concentrates most of them).
+ * (weighted by population, so Vire Normandie concentrates most of them).
  */
 const HOUSING_COUNT = 300;
 
-// Communes de la CA Douaisis Agglo (SIREN 200044618) — source geo.api.gouv.fr.
+// Communes de la CC Intercom de la Vire au Noireau (SIREN 200068799) — source geo.api.gouv.fr.
 // geoCode INSEE, code postal principal et coordonnées du centre (réels) pour la carte.
 const EPCI_COMMUNES: ReadonlyArray<{
   geoCode: string;
@@ -43,41 +43,23 @@ const EPCI_COMMUNES: ReadonlyArray<{
   center: { latitude: number; longitude: number };
   population: number;
 }> = [
-  { geoCode: '59178', postalCode: '59500', city: 'Douai', center: { latitude: 50.3785, longitude: 3.1004 }, population: 40250 },
-  { geoCode: '59569', postalCode: '59450', city: 'Sin-le-Noble', center: { latitude: 50.3672, longitude: 3.1213 }, population: 16076 },
-  { geoCode: '59654', postalCode: '59119', city: 'Waziers', center: { latitude: 50.3841, longitude: 3.1121 }, population: 7266 },
-  { geoCode: '59028', postalCode: '59950', city: 'Auby', center: { latitude: 50.4143, longitude: 3.0612 }, population: 7083 },
-  { geoCode: '59165', postalCode: '59553', city: 'Cuincy', center: { latitude: 50.3746, longitude: 3.0313 }, population: 6467 },
-  { geoCode: '59327', postalCode: '59167', city: 'Lallaing', center: { latitude: 50.3868, longitude: 3.1719 }, population: 6287 },
-  { geoCode: '59509', postalCode: '59286', city: 'Roost-Warendin', center: { latitude: 50.4127, longitude: 3.0981 }, population: 5956 },
-  { geoCode: '59239', postalCode: '59148', city: 'Flines-lez-Raches', center: { latitude: 50.4158, longitude: 3.1833 }, population: 5745 },
-  { geoCode: '59234', postalCode: '59128', city: 'Flers-en-Escrebieux', center: { latitude: 50.4025, longitude: 3.0497 }, population: 5424 },
-  { geoCode: '59170', postalCode: '59187', city: 'Dechy', center: { latitude: 50.3523, longitude: 3.1288 }, population: 5338 },
-  { geoCode: '59329', postalCode: '59552', city: 'Lambres-lez-Douai', center: { latitude: 50.3548, longitude: 3.0542 }, population: 4883 },
-  { geoCode: '59276', postalCode: '59287', city: 'Guesnain', center: { latitude: 50.3486, longitude: 3.1480 }, population: 4635 },
-  { geoCode: '59489', postalCode: '59283', city: 'Raimbeaucourt', center: { latitude: 50.4369, longitude: 3.1024 }, population: 4000 },
-  { geoCode: '59015', postalCode: '59151', city: 'Arleux', center: { latitude: 50.2834, longitude: 3.1041 }, population: 3125 },
-  { geoCode: '59156', postalCode: '59552', city: 'Courchelettes', center: { latitude: 50.3420, longitude: 3.0595 }, population: 2855 },
-  { geoCode: '59486', postalCode: '59194', city: 'Râches', center: { latitude: 50.4208, longitude: 3.1338 }, population: 2672 },
-  { geoCode: '59222', postalCode: '59310', city: 'Faumont', center: { latitude: 50.4503, longitude: 3.1335 }, population: 2278 },
-  { geoCode: '59126', postalCode: '59169', city: 'Cantin', center: { latitude: 50.3084, longitude: 3.1258 }, population: 1741 },
-  { geoCode: '59224', postalCode: '59247', city: 'Féchain', center: { latitude: 50.2692, longitude: 3.2134 }, population: 1635 },
-  { geoCode: '59334', postalCode: '59553', city: 'Lauwin-Planque', center: { latitude: 50.3921, longitude: 3.0306 }, population: 1608 },
-  { geoCode: '59228', postalCode: '59169', city: 'Férin', center: { latitude: 50.3300, longitude: 3.0827 }, population: 1432 },
-  { geoCode: '59336', postalCode: '59259', city: 'Lécluse', center: { latitude: 50.2758, longitude: 3.0330 }, population: 1346 },
-  { geoCode: '59026', postalCode: '59265', city: 'Aubigny-au-Bac', center: { latitude: 50.2665, longitude: 3.1664 }, population: 1143 },
-  { geoCode: '59214', postalCode: '59151', city: 'Estrées', center: { latitude: 50.2986, longitude: 3.0721 }, population: 1134 },
-  { geoCode: '59117', postalCode: '59151', city: 'Bugnicourt', center: { latitude: 50.2895, longitude: 3.1547 }, population: 1095 },
-  { geoCode: '59263', postalCode: '59169', city: 'Gœulzin', center: { latitude: 50.3161, longitude: 3.1011 }, population: 1070 },
-  { geoCode: '59254', postalCode: '59234', city: 'Fressain', center: { latitude: 50.2835, longitude: 3.1907 }, population: 919 },
-  { geoCode: '59211', postalCode: '59553', city: 'Esquerchin', center: { latitude: 50.3873, longitude: 3.0059 }, population: 893 },
-  { geoCode: '59007', postalCode: '59194', city: 'Anhiers', center: { latitude: 50.4037, longitude: 3.1546 }, population: 888 },
-  { geoCode: '59280', postalCode: '59151', city: 'Hamel', center: { latitude: 50.2828, longitude: 3.0692 }, population: 797 },
-  { geoCode: '59379', postalCode: '59252', city: 'Marcq-en-Ostrevent', center: { latitude: 50.2889, longitude: 3.2334 }, population: 741 },
-  { geoCode: '59115', postalCode: '59151', city: 'Brunémont', center: { latitude: 50.2740, longitude: 3.1436 }, population: 704 },
-  { geoCode: '59199', postalCode: '59169', city: 'Erchin', center: { latitude: 50.3142, longitude: 3.1710 }, population: 670 },
-  { geoCode: '59620', postalCode: '59234', city: 'Villers-au-Tertre', center: { latitude: 50.3001, longitude: 3.1729 }, population: 670 },
-  { geoCode: '59513', postalCode: '59169', city: 'Roucourt', center: { latitude: 50.3275, longitude: 3.1460 }, population: 456 },
+  { geoCode: '14762', postalCode: '14500', city: 'Vire Normandie', center: { latitude: 48.8199, longitude: -0.8700 }, population: 17457 },
+  { geoCode: '14061', postalCode: '14260', city: 'Souleuvre en Bocage', center: { latitude: 48.9616, longitude: -0.8400 }, population: 8629 },
+  { geoCode: '14174', postalCode: '14110', city: 'Condé-en-Normandie', center: { latitude: 48.8852, longitude: -0.5779 }, population: 5985 },
+  { geoCode: '14726', postalCode: '14350', city: 'Valdallière', center: { latitude: 48.8619, longitude: -0.7173 }, population: 5696 },
+  { geoCode: '14658', postalCode: '14380', city: 'Noues de Sienne', center: { latitude: 48.8297, longitude: -1.0280 }, population: 4207 },
+  { geoCode: '14357', postalCode: '14770', city: 'Terres de Druance', center: { latitude: 48.9278, longitude: -0.6531 }, population: 906 },
+  { geoCode: '14352', postalCode: '14380', city: 'Landelles-et-Coupigny', center: { latitude: 48.8968, longitude: -1.0013 }, population: 818 },
+  { geoCode: '14572', postalCode: '14110', city: 'Saint-Denis-de-Méré', center: { latitude: 48.8626, longitude: -0.5028 }, population: 754 },
+  { geoCode: '14127', postalCode: '14500', city: 'Campagnolles', center: { latitude: 48.8893, longitude: -0.9370 }, population: 562 },
+  { geoCode: '14559', postalCode: '14380', city: 'Saint-Aubin-des-Bois', center: { latitude: 48.8336, longitude: -1.1339 }, population: 226 },
+  { geoCode: '14756', postalCode: '14570', city: 'La Villette', center: { latitude: 48.9089, longitude: -0.5428 }, population: 217 },
+  { geoCode: '14054', postalCode: '14380', city: 'Beaumesnil', center: { latitude: 48.8971, longitude: -0.9676 }, population: 207 },
+  { geoCode: '14424', postalCode: '14380', city: 'Le Mesnil-Robert', center: { latitude: 48.8801, longitude: -0.9731 }, population: 181 },
+  { geoCode: '14619', postalCode: '14380', city: 'Sainte-Marie-Outre-l’Eau', center: { latitude: 48.9302, longitude: -1.0287 }, population: 124 },
+  { geoCode: '14512', postalCode: '14110', city: 'Pontécoulant', center: { latitude: 48.8877, longitude: -0.5832 }, population: 71 },
+  { geoCode: '14511', postalCode: '14380', city: 'Pont-Bellanger', center: { latitude: 48.9361, longitude: -0.9833 }, population: 60 },
+  { geoCode: '14496', postalCode: '14770', city: 'Périgny', center: { latitude: 48.9180, longitude: -0.6054 }, population: 58 },
 ];
 
 // Generic but plausible street names found in most French communes. Combined
@@ -115,7 +97,7 @@ let cache: DemoSeed | null = null;
 
 /**
  * Populate the in-memory MSW store (`data`) with a coherent and reproducible
- * data set covering the whole Douaisis Agglo EPCI. Safe to call
+ * data set covering the whole Vire au Noireau EPCI. Safe to call
  * multiple times — only seeds once.
  */
 export function seed(): DemoSeed {
@@ -130,9 +112,9 @@ export function seed(): DemoSeed {
   // --- Establishment -------------------------------------------------------
   const establishment: EstablishmentDTO = {
     ...genEstablishmentDTO(),
-    name: 'Test Douaisis Agglo',
-    shortName: 'Douaisis Agglo',
-    siren: '200044618',
+    name: 'Test Vire au Noireau',
+    shortName: 'Vire au Noireau',
+    siren: '200068799',
     geoCodes: EPCI_COMMUNES.map((commune) => commune.geoCode),
     available: true
   };
@@ -156,7 +138,7 @@ export function seed(): DemoSeed {
   data.owners.push(...owners);
 
   // Pick a commune weighted by population, so the distribution looks realistic
-  // (Douai gets the lion's share, the small communes only a few housings).
+  // (Vire Normandie gets the lion's share, the small communes only a few housings).
   const communeChoices = EPCI_COMMUNES.map((commune) => ({
     weight: commune.population,
     value: commune

@@ -54,11 +54,6 @@ export type EventPayloads = {
     status?: string;
     subStatus?: string | null;
   }>;
-  'housing:verified': CreationEventChange<{
-    group: { id: string; title: string } | null;
-    modifications: ReadonlyArray<string>;
-  }>;
-
   'housing:precision-attached': CreationEventChange<{
     category: PrecisionCategory;
     label: string;

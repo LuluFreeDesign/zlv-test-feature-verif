@@ -36,10 +36,6 @@ const EVENT_TYPE_VALUES = [
   {
     value: 'event',
     label: 'Mise à jour'
-  },
-  {
-    value: 'verification',
-    label: 'Vérification'
   }
 ] as const;
 type EventType = (typeof EVENT_TYPE_VALUES)[number];
@@ -273,20 +269,7 @@ function byTypes(types: ReadonlyArray<EventType>) {
 
     const values = types.map((type) => type.value);
 
-    if (
-      values.includes('verification') &&
-      isEvent(event) &&
-      event.type === 'housing:verified'
-    ) {
-      return true;
-    }
-
-    // "Mise à jour" covers every event except the dedicated verification one.
-    if (
-      values.includes('event') &&
-      isEvent(event) &&
-      event.type !== 'housing:verified'
-    ) {
+    if (values.includes('event') && isEvent(event)) {
       return true;
     }
 

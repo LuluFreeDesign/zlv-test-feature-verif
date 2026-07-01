@@ -234,10 +234,9 @@ function HousingList(props: HousingListProps) {
                 size="small"
                 priority="secondary"
                 title={`Éditer le logement "${row.original.rawAddress.join(', ')}"`}
-                nativeButtonProps={{
-                  'aria-label': `Éditer le logement "${row.original.rawAddress.join(', ')}"`
+                linkProps={{
+                  to: `/parc-de-logements/passer-en-revue/${row.original.id}`
                 }}
-                onClick={() => setUpdatingHousing(row.original)}
               >
                 Éditer
               </Button>

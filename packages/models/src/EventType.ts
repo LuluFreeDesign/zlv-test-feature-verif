@@ -6,7 +6,6 @@ export const EVENT_TYPE_VALUES = [
   'housing:updated',
   'housing:occupancy-updated',
   'housing:status-updated',
-  'housing:verified',
   'housing:precision-attached',
   'housing:precision-detached',
   'housing:owner-attached',

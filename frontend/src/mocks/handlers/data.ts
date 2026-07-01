@@ -64,7 +64,6 @@ const housingEvents = new Map<
     | 'housing:created'
     | 'housing:occupancy-updated'
     | 'housing:status-updated'
-    | 'housing:verified'
   >[]
 >();
 const housingFiles = new Map<HousingDTO['id'], FileUploadDTO[]>();

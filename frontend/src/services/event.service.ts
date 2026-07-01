@@ -33,23 +33,6 @@ export const eventApi = zlvApi.injectEndpoints({
         events
           .map(fromEventDTO)
           .filter((event) => !isHousingOwnerSecondaryChange(event))
-    }),
-    createHousingVerificationEvent: builder.mutation<
-      EventDTO<'housing:verified'>,
-      {
-        housingId: string;
-        group: { id: string; title: string } | null;
-        modifications: string[];
-      }
-    >({
-      query: ({ housingId, group, modifications }) => ({
-        url: `/housing/${housingId}/events`,
-        method: 'POST',
-        body: { group, modifications }
-      }),
-      invalidatesTags: (_result, _error, { housingId }) => [
-        { type: 'HousingEvent', id: housingId }
-      ]
     })
   })
 });
@@ -67,6 +50,5 @@ function isHousingOwnerSecondaryChange(event: Event) {
 
 export const {
   useFindEventsByHousingQuery,
-  useFindEventsByOwnerQuery,
-  useCreateHousingVerificationEventMutation
+  useFindEventsByOwnerQuery
 } = eventApi;
