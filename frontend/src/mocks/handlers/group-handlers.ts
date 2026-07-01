@@ -11,6 +11,7 @@ import { constants } from 'node:http2';
 import config from '../../utils/config';
 import { decodeAuth } from './auth-helpers';
 import data from './data';
+import { filterByDTO } from './housing-handlers';
 
 type GroupParams = {
   id: string;
@@ -35,11 +36,16 @@ export const groupHandlers: RequestHandler[] = [
         data.users.find((user) => user.id === auth?.user.id) ?? data.users[0];
 
       // Use the housings the user actually selected. `all` means "everything
-      // matching the current filter except the listed ids" (deselection).
+      // matching the current filter except the listed ids" (deselection), so we
+      // must apply the active filters — otherwise a group built from a commune
+      // filter would wrongly include the whole parc.
       const ids = new Set(payload.housing?.ids ?? []);
       const all = payload.housing?.all ?? false;
+      const filtered = payload.housing?.filters
+        ? filterByDTO(payload.housing.filters)([...data.housings])
+        : [...data.housings];
       const housings = all
-        ? data.housings.filter((housing) => !ids.has(housing.id))
+        ? filtered.filter((housing) => !ids.has(housing.id))
         : data.housings.filter((housing) => ids.has(housing.id));
 
       const group: GroupDTO = {

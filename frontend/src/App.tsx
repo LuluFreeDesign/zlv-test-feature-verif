@@ -75,14 +75,8 @@ const router = sentry.createBrowserRouter(
         />
         <Route path="/groupes/:id" element={<GroupView />} />
         <Route
-          path="/groupes/:id/passer-en-revue"
-          element={
-            <FeatureFlagLayout
-              flag="group-housing-review"
-              then={<GroupHousingReviewView />}
-              else={<NotFoundView />}
-            />
-          }
+          path="/parc-de-logements/passer-en-revue/:housingId"
+          element={<GroupHousingReviewView />}
         />
         <Route path="/campagnes" element={<CampaignListView />} />
         <Route path="/campagnes/:id" element={<CampaignView />} />

@@ -1,5 +1,4 @@
 import { fr } from '@codegouvfr/react-dsfr';
-import Badge from '@codegouvfr/react-dsfr/Badge';
 import Breadcrumb from '@codegouvfr/react-dsfr/Breadcrumb';
 import Button from '@codegouvfr/react-dsfr/Button';
 import { createModal } from '@codegouvfr/react-dsfr/Modal';
@@ -14,7 +13,6 @@ import {
   ENERGY_CONSUMPTION_VALUES,
   HOUSING_STATUS_VALUES,
   Occupancy,
-  OCCUPANCY_LABELS,
   OCCUPANCY_VALUES,
   PRECISION_CATEGORY_VALUES
 } from '@zerologementvacant/models';
@@ -26,39 +24,25 @@ import {
   type SubmitHandler
 } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
-import { format } from 'date-fns';
-import { fr as frLocale } from 'date-fns/locale/fr';
 import { array, number, object, string, type InferType } from 'yup';
 
 import DPE from '~/components/DPE/DPE';
 import HousingEditionMobilizationTab from '~/components/HousingEdition/HousingEditionMobilizationTab';
 import ReviewHousingList from '~/components/HousingReview/ReviewHousingList';
 import ReviewOwnersSection from '~/components/HousingReview/ReviewOwnersSection';
-import ReviewProgressBar from '~/components/HousingReview/ReviewProgressBar';
 import EnergyConsumptionSelect from '~/components/HousingListFilters/EnergyConsumptionSelect';
 import OccupancySelect from '~/components/HousingListFilters/OccupancySelect';
 import Map from '~/components/Map/Map';
 import AppTextInputNext from '~/components/_app/AppTextInput/AppTextInputNext';
-import { useHousingReview } from '~/hooks/useHousingReview';
+import { useAppSelector } from '~/hooks/useStore';
 import { useNotification } from '~/hooks/useNotification';
 import { HousingStates } from '~/models/HousingState';
-import {
-  useCreateHousingVerificationEventMutation,
-  useFindEventsByHousingQuery
-} from '~/services/event.service';
-import { useGetGroupQuery } from '~/services/group.service';
-import {
-  useFindHousingQuery,
-  useUpdateHousingMutation
-} from '~/services/housing.service';
-import type { Event } from '~/models/Event';
-import type { Housing } from '~/models/Housing';
+import { useFindHousingQuery, useUpdateHousingMutation } from '~/services/housing.service';
 import { useCreateNoteByHousingMutation } from '~/services/note.service';
 import {
   useFindPrecisionsByHousingQuery,
   useSaveHousingPrecisionsMutation
 } from '~/services/precision.service';
-import NotFoundView from '../NotFoundView';
 
 const schema = object({
   occupancy: string()
@@ -120,77 +104,35 @@ function fakeRepresentativeDpe(housingId: string): EnergyConsumption {
 }
 
 /**
- * Human-readable list of the modifications made during a review, used as the
- * "Voir plus" details of the "Vérification" history event.
+ * Housing review flow, launched from the Parc de logements ("Éditer" on a
+ * housing row). It iterates over the currently filtered parc list, starting at
+ * the housing that was clicked. "Enregistrer et passer au suivant" walks the
+ * list.
  */
-function buildVerificationModifications(
-  oldHousing: Housing,
-  payload: ReviewFormSchema,
-  dirty: Partial<Record<keyof ReviewFormSchema, unknown>>
-): string[] {
-  const occupancyLabel = (value: string | null | undefined): string =>
-    value ? (OCCUPANCY_LABELS[value as Occupancy] ?? value) : 'Pas d’information';
-  const statusLabel = (status: number | null | undefined): string =>
-    HousingStates.find((state) => state.status === status)?.title ?? 'Non suivi';
-
-  const modifications: string[] = [];
-  if (dirty.occupancy) {
-    modifications.push(
-      `L’occupation actuelle est passée de « ${occupancyLabel(oldHousing.occupancy)} » à « ${occupancyLabel(payload.occupancy)} »`
-    );
-  }
-  if (dirty.occupancyIntended) {
-    modifications.push(
-      `L’occupation prévisionnelle est passée de « ${occupancyLabel(oldHousing.occupancyIntended)} » à « ${occupancyLabel(payload.occupancyIntended)} »`
-    );
-  }
-  if (dirty.status) {
-    modifications.push(
-      `Le statut de suivi est passé de « ${statusLabel(oldHousing.status)} » à « ${statusLabel(payload.status)} »`
-    );
-  }
-  if (dirty.subStatus) {
-    modifications.push(
-      `Le sous-statut de suivi est passé de « ${oldHousing.subStatus ?? 'aucun'} » à « ${payload.subStatus ?? 'aucun'} »`
-    );
-  }
-  if (dirty.actualEnergyConsumption) {
-    modifications.push(
-      `L’étiquette DPE renseignée est passée de « ${oldHousing.actualEnergyConsumption ?? 'aucune'} » à « ${payload.actualEnergyConsumption ?? 'aucune'} »`
-    );
-  }
-  if (dirty.precisions) {
-    modifications.push('Les précisions ont été mises à jour');
-  }
-  if (payload.note) {
-    modifications.push('Une note a été ajoutée');
-  }
-  return modifications;
-}
-
-function GroupHousingReviewView() {
-  const { id: groupId } = useParams<{ id: string }>();
+function HousingReviewView() {
+  const { housingId } = useParams<{ housingId: string }>();
   const navigate = useNavigate();
 
-  const { data: group } = useGetGroupQuery(groupId ?? skipToken);
+  // Same filters as the parc (Redux store), so the review iterates exactly the
+  // list the user is looking at.
+  const filters = useAppSelector((state) => state.housing.filters);
   const { data: housingResult, isLoading: isLoadingHousings } =
-    useFindHousingQuery(
-      groupId ? { filters: { groupIds: [groupId] } } : skipToken
-    );
+    useFindHousingQuery({
+      filters,
+      pagination: { paginate: true, page: 1, perPage: 10_000 }
+    });
   const housings = housingResult?.entities ?? [];
 
-  const review = useHousingReview(groupId ?? '');
-  const { startReview, markVerified, isVerified, verifiedCount } = review;
-
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    housingId ?? null
+  );
   const pendingAction = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (housings.length > 0 && selectedId === null) {
-      startReview();
       setSelectedId(housings[0].id);
     }
-  }, [housings, selectedId, startReview]);
+  }, [housings, selectedId]);
 
   const selectedHousing =
     housings.find((housing) => housing.id === selectedId) ?? null;
@@ -201,19 +143,10 @@ function GroupHousingReviewView() {
   const { data: housingPrecisions } = useFindPrecisionsByHousingQuery(
     selectedHousing ? { housingId: selectedHousing.id } : skipToken
   );
-  const { data: housingEvents = [] } = useFindEventsByHousingQuery(
-    selectedHousing?.id ?? skipToken
-  );
-  const verifications = housingEvents.filter(
-    (event): event is Event<'housing:verified'> =>
-      event.type === 'housing:verified'
-  );
 
   const [updateHousing, housingUpdateMutation] = useUpdateHousingMutation();
   const [saveHousingPrecisions] = useSaveHousingPrecisionsMutation();
   const [createNote] = useCreateNoteByHousingMutation();
-  const [createVerificationEvent] =
-    useCreateHousingVerificationEventMutation();
 
   useNotification({
     toastId: 'review-housing-update',
@@ -223,7 +156,7 @@ function GroupHousingReviewView() {
     message: {
       error: 'Impossible d’enregistrer le logement',
       loading: 'Enregistrement...',
-      success: 'Logement vérifié et enregistré'
+      success: 'Logement enregistré'
     }
   });
 
@@ -258,12 +191,12 @@ function GroupHousingReviewView() {
     }
   }
 
-  function selectHousing(housingId: string): void {
-    guarded(() => setSelectedId(housingId));
+  function selectHousing(id: string): void {
+    guarded(() => setSelectedId(id));
   }
 
-  function backToGroup(): void {
-    guarded(() => navigate(`/groupes/${groupId}`));
+  function backToParc(): void {
+    guarded(() => navigate('/parc-de-logements'));
   }
 
   const submit: SubmitHandler<ReviewFormSchema> = (payload) => {
@@ -294,30 +227,11 @@ function GroupHousingReviewView() {
       createNote({ id: selectedHousing.id, content: payload.note });
     }
 
-    // Record a "Vérification" event in the housing history, listing the
-    // modifications made during this review.
-    createVerificationEvent({
-      housingId: selectedHousing.id,
-      group: groupId ? { id: groupId, title: group?.title ?? 'Groupe' } : null,
-      modifications: buildVerificationModifications(
-        selectedHousing,
-        payload,
-        form.formState.dirtyFields
-      )
-    });
-
-    markVerified(selectedHousing.id);
-
     if (selectedIndex >= 0 && selectedIndex < housings.length - 1) {
       goToIndex(selectedIndex + 1);
     }
   };
 
-  if (!groupId) {
-    return <NotFoundView />;
-  }
-
-  const groupTitle = group?.title ?? 'Groupe';
   const housingAddress = selectedHousing?.rawAddress.join(', ') ?? '';
   const streetViewUrl = selectedHousing
     ? `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${selectedHousing.latitude},${selectedHousing.longitude}`
@@ -325,67 +239,76 @@ function GroupHousingReviewView() {
   const separatorBorder = `1px solid ${fr.colors.decisions.border.default.grey.default}`;
 
   return (
-    <Box sx={{ px: '1.5rem', py: '1.5rem' }}>
-      <Breadcrumb
-        className="fr-mb-1w"
-        currentPageLabel="Passer en revue les logements"
-        segments={[
-          { label: 'Parc de logements', linkProps: { to: '/parc-de-logements' } },
-          { label: groupTitle, linkProps: { to: `/groupes/${groupId}` } }
-        ]}
-      />
-
-      <Stack
-        direction="row"
-        spacing="1rem"
-        useFlexGap
+    <Box sx={{ px: '1.5rem', pb: '1.5rem' }}>
+      {/* Sticky header: title + navigation + save button */}
+      <Box
         sx={{
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          mb: '0.25rem'
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          backgroundColor: fr.colors.decisions.background.default.grey.default,
+          pt: '1.5rem',
+          pb: '1rem',
+          mb: '1rem',
+          borderBottom: separatorBorder
         }}
       >
-        <Typography component="h1" variant="h4">
-          Passer en revue les logements du groupe {groupTitle}
-        </Typography>
-        <Button priority="secondary" onClick={backToGroup}>
-          Revenir au groupe
-        </Button>
-      </Stack>
+        <Breadcrumb
+          className="fr-mb-1w"
+          currentPageLabel="Passer en revue les logements"
+          segments={[
+            {
+              label: 'Parc de logements',
+              linkProps: { to: '/parc-de-logements' }
+            }
+          ]}
+        />
 
-      <Stack
-        direction="row"
-        spacing="1rem"
-        useFlexGap
-        sx={{ alignItems: 'center', flexWrap: 'wrap', mb: '1.5rem' }}
-      >
-        <Box sx={{ flexGrow: 1, minWidth: '14rem' }}>
-          <ReviewProgressBar value={verifiedCount} total={housings.length} />
-        </Box>
-        <Button
-          priority="tertiary"
-          iconId="fr-icon-arrow-up-s-line"
-          title="Logement précédent"
-          disabled={selectedIndex <= 0}
-          onClick={() => guarded(() => goToIndex(selectedIndex - 1))}
-        />
-        <Button
-          priority="tertiary"
-          iconId="fr-icon-arrow-down-s-line"
-          title="Logement suivant"
-          disabled={selectedIndex < 0 || selectedIndex >= housings.length - 1}
-          onClick={() => guarded(() => goToIndex(selectedIndex + 1))}
-        />
-        <Button
-          priority="primary"
-          iconId="fr-icon-check-line"
-          onClick={form.handleSubmit(submit)}
-          disabled={!selectedHousing}
+        <Stack
+          direction="row"
+          spacing="1rem"
+          useFlexGap
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap'
+          }}
         >
-          Enregistrer et passer au suivant
-        </Button>
-      </Stack>
+          <Typography component="h1" variant="h4" sx={{ mb: 0 }}>
+            Passer en revue les logements
+          </Typography>
+
+          <Stack direction="row" spacing="0.5rem" useFlexGap>
+            <Button priority="secondary" onClick={backToParc}>
+              Revenir au parc
+            </Button>
+            <Button
+              priority="tertiary"
+              iconId="fr-icon-arrow-up-s-line"
+              title="Logement précédent"
+              disabled={selectedIndex <= 0}
+              onClick={() => guarded(() => goToIndex(selectedIndex - 1))}
+            />
+            <Button
+              priority="tertiary"
+              iconId="fr-icon-arrow-down-s-line"
+              title="Logement suivant"
+              disabled={
+                selectedIndex < 0 || selectedIndex >= housings.length - 1
+              }
+              onClick={() => guarded(() => goToIndex(selectedIndex + 1))}
+            />
+            <Button
+              priority="primary"
+              iconId="fr-icon-check-line"
+              onClick={form.handleSubmit(submit)}
+              disabled={!selectedHousing}
+            >
+              Enregistrer et passer au suivant
+            </Button>
+          </Stack>
+        </Stack>
+      </Box>
 
       <Grid container columnSpacing="1.5rem">
         {/* Left column: housings to review */}
@@ -394,7 +317,7 @@ function GroupHousingReviewView() {
           sx={{ borderRight: { md: separatorBorder }, pr: { md: '1rem' } }}
         >
           <Typography component="h2" variant="h6" sx={{ mb: '0.5rem' }}>
-            Logements à vérifier
+            Logements à éditer
           </Typography>
           {isLoadingHousings ? (
             <Typography>Chargement…</Typography>
@@ -402,7 +325,6 @@ function GroupHousingReviewView() {
             <ReviewHousingList
               housings={housings}
               selectedId={selectedId}
-              isVerified={isVerified}
               onSelect={selectHousing}
             />
           )}
@@ -424,21 +346,9 @@ function GroupHousingReviewView() {
                     flexWrap: 'wrap'
                   }}
                 >
-                  <Stack
-                    direction="row"
-                    spacing="0.5rem"
-                    useFlexGap
-                    sx={{ alignItems: 'center' }}
-                  >
-                    <Typography component="h2" variant="h4">
-                      {housingAddress}
-                    </Typography>
-                    {isVerified(selectedHousing.id) ? (
-                      <Badge severity="success" small>
-                        Vérifié
-                      </Badge>
-                    ) : null}
-                  </Stack>
+                  <Typography component="h2" variant="h4">
+                    {housingAddress}
+                  </Typography>
                   <Button
                     priority="tertiary"
                     size="small"
@@ -460,93 +370,63 @@ function GroupHousingReviewView() {
                     <Stack spacing="1.5rem" useFlexGap>
                       <ReviewOwnersSection housing={selectedHousing} />
 
-                <Stack component="section" spacing="1rem" useFlexGap>
-                  <Typography component="h3" variant="h6">
-                    Occupation et suivi
-                  </Typography>
+                      <Stack component="section" spacing="1rem" useFlexGap>
+                        <Typography component="h3" variant="h6">
+                          Occupation et suivi
+                        </Typography>
 
-                  <Box sx={{ maxWidth: OCCUPANCY_WIDTH }}>
-                    <Controller<ReviewFormSchema, 'occupancy'>
-                      name="occupancy"
-                      render={({ field, fieldState }) => (
-                        <OccupancySelect
-                          label="Occupation actuelle"
-                          disabled={field.disabled}
-                          error={fieldState.error?.message}
-                          invalid={fieldState.invalid}
-                          value={field.value as Occupancy}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                  </Box>
+                        <Box sx={{ maxWidth: OCCUPANCY_WIDTH }}>
+                          <Controller<ReviewFormSchema, 'occupancy'>
+                            name="occupancy"
+                            render={({ field, fieldState }) => (
+                              <OccupancySelect
+                                label="Occupation actuelle"
+                                disabled={field.disabled}
+                                error={fieldState.error?.message}
+                                invalid={fieldState.invalid}
+                                value={field.value as Occupancy}
+                                onChange={field.onChange}
+                              />
+                            )}
+                          />
+                        </Box>
 
-                  <Box sx={{ maxWidth: OCCUPANCY_WIDTH }}>
-                    <Controller<ReviewFormSchema, 'occupancyIntended'>
-                      name="occupancyIntended"
-                      render={({ field, fieldState }) => (
-                        <OccupancySelect
-                          label="Occupation prévisionnelle"
-                          disabled={field.disabled}
-                          error={fieldState.error?.message}
-                          invalid={fieldState.invalid}
-                          value={field.value as Occupancy | null}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                  </Box>
+                        <Box sx={{ maxWidth: OCCUPANCY_WIDTH }}>
+                          <Controller<ReviewFormSchema, 'occupancyIntended'>
+                            name="occupancyIntended"
+                            render={({ field, fieldState }) => (
+                              <OccupancySelect
+                                label="Occupation prévisionnelle"
+                                disabled={field.disabled}
+                                error={fieldState.error?.message}
+                                invalid={fieldState.invalid}
+                                value={field.value as Occupancy | null}
+                                onChange={field.onChange}
+                              />
+                            )}
+                          />
+                        </Box>
 
-                  <Box sx={{ maxWidth: STATUS_WIDTH }}>
-                    <HousingEditionMobilizationTab />
-                  </Box>
+                        <Box sx={{ maxWidth: STATUS_WIDTH }}>
+                          <HousingEditionMobilizationTab />
+                        </Box>
                       </Stack>
                     </Stack>
                   </Grid>
 
-                  {/* Right: verifications, map, note, DPE */}
+                  {/* Right: note, map, DPE */}
                   <Grid size={{ xs: 12, md: 5 }}>
                     <Stack spacing="1.5rem" useFlexGap>
-                      {verifications.length > 0 ? (
-                        <Box
-                          component="section"
-                          sx={{
-                            border: `1px solid ${fr.colors.decisions.border.default.grey.default}`,
-                            borderRadius: '0.25rem',
-                            p: '1rem'
-                          }}
-                        >
-                          <Typography
-                            component="h3"
-                            variant="h6"
-                            sx={{ mb: '0.5rem' }}
-                          >
-                            Vérifications précédentes
-                          </Typography>
-                          <Stack spacing="0.25rem" useFlexGap>
-                            {verifications.map((event) => (
-                              <Typography
-                                key={event.id}
-                                variant="body2"
-                                sx={{
-                                  color:
-                                    fr.colors.decisions.text.mention.grey
-                                      .default
-                                }}
-                              >
-                                Vérifié le{' '}
-                                {format(
-                                  new Date(event.createdAt),
-                                  'dd/MM/yyyy',
-                                  { locale: frLocale }
-                                )}{' '}
-                                dans le groupe{' '}
-                                {event.nextNew.group?.title ?? '—'}
-                              </Typography>
-                            ))}
-                          </Stack>
-                        </Box>
-                      ) : null}
+                      <AppTextInputNext<ReviewFormSchema, 'note'>
+                        label="Nouvelle note"
+                        name="note"
+                        textArea
+                        nativeTextAreaProps={{ rows: 6 }}
+                        mapValue={(value) => value ?? ''}
+                        contramapValue={(value) =>
+                          value === '' ? null : value
+                        }
+                      />
 
                       <Box>
                         <Map
@@ -559,42 +439,41 @@ function GroupHousingReviewView() {
                             pitch: 0,
                             padding: { top: 0, bottom: 0, left: 0, right: 0 }
                           }}
-                          style={{ height: '14rem', width: '100%' }}
+                          style={{ height: '7rem', width: '100%' }}
                         />
-                  {streetViewUrl ? (
-                    <Typography sx={{ mt: '0.5rem', textAlign: 'right' }}>
-                      <a
-                        href={streetViewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Voir le bâtiment
-                      </a>
-                    </Typography>
-                  ) : null}
-                </Box>
+                        {streetViewUrl ? (
+                          <Box sx={{ mt: '0.5rem', textAlign: 'right' }}>
+                            <Button
+                              priority="secondary"
+                              size="medium"
+                              iconId="ri-external-link-line"
+                              iconPosition="right"
+                              linkProps={{
+                                href: streetViewUrl,
+                                target: '_blank',
+                                rel: 'noopener noreferrer'
+                              }}
+                            >
+                              Voir le bâtiment
+                            </Button>
+                          </Box>
+                        ) : null}
+                      </Box>
 
-                <AppTextInputNext<ReviewFormSchema, 'note'>
-                  label="Nouvelle note"
-                  name="note"
-                  textArea
-                  nativeTextAreaProps={{ rows: 6 }}
-                  mapValue={(value) => value ?? ''}
-                  contramapValue={(value) => (value === '' ? null : value)}
-                />
-
-                <Stack component="section" spacing="0.25rem" useFlexGap>
-                  <Typography sx={{ fontWeight: 500 }}>
-                    Étiquette DPE représentatif (source : ADEME)
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: fr.colors.decisions.text.mention.grey.default }}
-                  >
-                    Issue du DPE le plus récent du bâtiment
-                  </Typography>
-                  <DPE value={fakeRepresentativeDpe(selectedHousing.id)} />
-                </Stack>
+                      <Stack component="section" spacing="0.25rem" useFlexGap>
+                        <Typography sx={{ fontWeight: 500 }}>
+                          Étiquette DPE représentatif (source : ADEME)
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: fr.colors.decisions.text.mention.grey.default
+                          }}
+                        >
+                          Issue du DPE le plus récent du bâtiment
+                        </Typography>
+                        <DPE value={fakeRepresentativeDpe(selectedHousing.id)} />
+                      </Stack>
 
                       <Box sx={{ maxWidth: DPE_WIDTH }}>
                         <Controller<ReviewFormSchema, 'actualEnergyConsumption'>
@@ -616,7 +495,7 @@ function GroupHousingReviewView() {
               </Stack>
             </FormProvider>
           ) : (
-            <Typography>Sélectionnez un logement à vérifier.</Typography>
+            <Typography>Aucun logement à éditer.</Typography>
           )}
         </Grid>
       </Grid>
@@ -645,4 +524,4 @@ function GroupHousingReviewView() {
   );
 }
 
-export default GroupHousingReviewView;
+export default HousingReviewView;

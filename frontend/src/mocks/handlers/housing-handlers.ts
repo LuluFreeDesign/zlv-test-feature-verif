@@ -491,3 +491,35 @@ export function filter(params: FilterParams) {
   return (housings: HousingDTO[]): HousingDTO[] =>
     pipe(housings, Array.filter(Predicate.every(predicates)));
 }
+
+/**
+ * Apply a `HousingFiltersDTO` (as sent by the frontend) to a housing list.
+ * Used when creating a group with "select all", so the group only contains the
+ * housings matching the active filters (e.g. the selected communes).
+ */
+export function filterByDTO(filters: HousingFiltersDTO) {
+  const toSet = (
+    values?: ReadonlyArray<string | null> | null
+  ): Set<string> | undefined => {
+    const cleaned = (values ?? []).filter(
+      (value): value is string => value != null
+    );
+    return cleaned.length ? new Set(cleaned) : undefined;
+  };
+
+  const statusList =
+    filters.status != null
+      ? [Number(filters.status)]
+      : filters.statusList?.map(Number);
+
+  return filter({
+    campaignIds: toSet(filters.campaignIds),
+    groupIds: toSet(filters.groupIds),
+    housingKinds: toSet(filters.housingKinds),
+    localities: toSet(filters.localities),
+    occupancies: toSet(filters.occupancies),
+    dataFileYearsIncluded: toSet(filters.dataFileYearsIncluded),
+    dataFileYearsExcluded: toSet(filters.dataFileYearsExcluded),
+    statuses: statusList?.length ? new Set(statusList) : undefined
+  });
+}

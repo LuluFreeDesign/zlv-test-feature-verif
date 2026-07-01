@@ -1,47 +1,29 @@
 import { fr } from '@codegouvfr/react-dsfr';
 import Button from '@codegouvfr/react-dsfr/Button';
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
-import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { useFeatureFlagEnabled } from 'posthog-js/react';
-import { useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
+import { type ReactNode } from 'react';
 import { match, Pattern } from 'ts-pattern';
 
 import AppLink from '~/components/_app/AppLink/AppLink';
 import { createCampaignFromGroupModal } from '~/components/Group/CreateCampaignFromGroupModal';
 import { createRemoveGroupModal } from '~/components/Group/RemoveGroupModal';
 import { createRenameGroupModal } from '~/components/Group/RenameGroupModal';
-import Dropdown from '~/components/Dropdown/Dropdown';
-import ReviewProgressBar from '~/components/HousingReview/ReviewProgressBar';
 import FullWidthButton from '~/components/ui/FullWidthButton';
 import Icon from '~/components/ui/Icon';
-import { useHousingReview } from '~/hooks/useHousingReview';
 import type { Campaign } from '~/models/Campaign';
 import type { Group as GroupModel } from '~/models/Group';
 import type { GroupPayload } from '~/models/GroupPayload';
 import { createdBy } from '~/models/User';
 import { useFindCampaignsQuery } from '~/services/campaign.service';
-import config from '~/utils/config';
 import { dateShortFormat } from '~/utils/dateUtils';
 import { pluralize } from '~/utils/stringUtils';
 
 const campaignFromGroupModal = createCampaignFromGroupModal();
 const renameGroupModal = createRenameGroupModal();
 const removeGroupModal = createRemoveGroupModal();
-
-const REVIEW_FEATURE_FLAG = 'group-housing-review';
-
-/** Left-aligned, full-width button used inside the "Actions" dropdown menu. */
-const ActionMenuButton = styled(Button)({
-  color: `${fr.colors.decisions.text.title.grey.default} !important`,
-  justifyContent: 'flex-start !important',
-  padding: '0.75rem 1rem !important',
-  width: '100% !important'
-});
 
 export interface GroupProps {
   className?: string;
@@ -55,14 +37,6 @@ export interface GroupProps {
 }
 
 function Group(props: Readonly<GroupProps>) {
-  const navigate = useNavigate();
-  const review = useHousingReview(props.group.id);
-  const [actionsOpen, setActionsOpen] = useState(false);
-  const reviewEnabledByPosthog = useFeatureFlagEnabled(REVIEW_FEATURE_FLAG);
-  const reviewEnabled =
-    reviewEnabledByPosthog ?? config.featureFlags.includes(REVIEW_FEATURE_FLAG);
-  const reviewPath = `/groupes/${props.group.id}/passer-en-revue`;
-
   const findCampaignsQuery = useFindCampaignsQuery({
     filters: { groupIds: [props.group.id] }
   });
@@ -197,7 +171,6 @@ function Group(props: Readonly<GroupProps>) {
             }}
           >
             <ul
-             
               style={{
                 listStyle: 'none',
                 padding: 0,
@@ -210,63 +183,14 @@ function Group(props: Readonly<GroupProps>) {
               }}
             >
               <li style={{ width: '100%' }}>
-                <Box
-                  sx={{
-                    width: '100%',
-                    '& > button': {
-                      width: '100%',
-                      justifyContent: 'center',
-                      // Neutralise the dropdown's "open" background so the
-                      // primary button keeps its normal state when clicked.
-                      '--background-open-blue-france':
-                        fr.colors.decisions.background.actionHigh.blueFrance
-                          .default
-                    }
-                  }}
+                <FullWidthButton
+                  priority="primary"
+                  iconId="fr-icon-mail-line"
+                  disabled={props.group.housingCount === 0}
+                  onClick={campaignFromGroupModal.open}
                 >
-                  <Dropdown
-                    label="Actions"
-                    open={actionsOpen}
-                    onOpen={() => setActionsOpen(true)}
-                    onClose={() => setActionsOpen(false)}
-                    buttonProps={{
-                      priority: 'primary',
-                      size: 'medium',
-                      disabled: props.group.housingCount === 0
-                    }}
-                    popoverProps={{
-                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                      transformOrigin: { vertical: 'top', horizontal: 'right' }
-                    }}
-                  >
-                    <Stack component="ul" sx={{ width: '20rem', listStyle: 'none', m: 0, p: '0.5rem 0' }}>
-                      <li>
-                        <ActionMenuButton
-                          priority="tertiary no outline"
-                          onClick={() => {
-                            setActionsOpen(false);
-                            campaignFromGroupModal.open();
-                          }}
-                        >
-                          Créer une campagne
-                        </ActionMenuButton>
-                      </li>
-                      {reviewEnabled ? (
-                        <li>
-                          <ActionMenuButton
-                            priority="tertiary no outline"
-                            onClick={() => {
-                              setActionsOpen(false);
-                              navigate(reviewPath);
-                            }}
-                          >
-                            Passer en revue les logements
-                          </ActionMenuButton>
-                        </li>
-                      ) : null}
-                    </Stack>
-                  </Dropdown>
-                </Box>
+                  Créer une campagne
+                </FullWidthButton>
               </li>
 
               <li style={{ width: '100%' }}>
@@ -328,37 +252,6 @@ function Group(props: Readonly<GroupProps>) {
             )
           )
           .otherwise(() => null)}
-
-        {reviewEnabled && review.started ? (
-          <Box
-            sx={{
-              border: `1px solid ${fr.colors.decisions.border.default.grey.default}`,
-              borderRadius: '0.25rem',
-              p: '1rem'
-            }}
-          >
-            <Stack
-              direction="row"
-              spacing="1rem"
-              useFlexGap
-              sx={{ alignItems: 'center', flexWrap: 'wrap' }}
-            >
-              <Box sx={{ flexGrow: 1, minWidth: '12rem' }}>
-                <ReviewProgressBar
-                  value={review.verifiedCount}
-                  total={props.group.housingCount}
-                />
-              </Box>
-              <Button
-                priority="secondary"
-                size="small"
-                onClick={() => navigate(reviewPath)}
-              >
-                Continuer le passage en revue
-              </Button>
-            </Stack>
-          </Box>
-        ) : null}
       </Stack>
 
       <campaignFromGroupModal.Component
