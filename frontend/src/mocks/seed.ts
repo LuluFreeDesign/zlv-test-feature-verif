@@ -177,6 +177,15 @@ export function seed(): DemoSeed {
       { weight: 25, value: Occupancy.RENT }
     ]);
     const isVacant = occupancy === Occupancy.VACANT;
+    // Rented housings come from the fichiers fonciers, split between 2023 and
+    // 2024 so the environment has "En location" housings in both millésimes.
+    const rentFileYear: 'ff-2023' | 'ff-2024' = faker.helpers.weightedArrayElement(
+      [
+        { weight: 65, value: 'ff-2023' as const },
+        { weight: 35, value: 'ff-2024' as const }
+      ]
+    );
+    const rentDataYear = rentFileYear === 'ff-2024' ? 2024 : 2023;
 
     const housing: HousingDTO = {
       ...base,
@@ -198,9 +207,9 @@ export function seed(): DemoSeed {
       status: HousingStatus.NEVER_CONTACTED,
       subStatus: null,
       // LOVAC 2026 for vacant housings (so they match the default
-      // "LOVAC 2026" filter), fichiers fonciers 2023 for rented ones.
-      dataFileYears: isVacant ? ['lovac-2026'] : ['ff-2023'],
-      dataYears: isVacant ? [2026] : [2023],
+      // "LOVAC 2026" filter), fichiers fonciers 2023/2024 for rented ones.
+      dataFileYears: isVacant ? ['lovac-2026'] : [rentFileYear],
+      dataYears: isVacant ? [2026] : [rentDataYear],
       source: isVacant ? 'lovac' : 'datafoncier-import'
     };
     housings.push(housing);
