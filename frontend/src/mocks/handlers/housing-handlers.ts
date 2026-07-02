@@ -31,6 +31,7 @@ interface HousingQueryParams {
   housingKinds?: string;
   localities?: string;
   occupancies?: string;
+  ownerIds?: string;
   relativeLocations?: string;
   status?: string;
   statusList?: string;
@@ -67,6 +68,9 @@ function parseQueryParams(url: URL): FilterParams {
     occupancies: params.occupancies
       ? new Set(params.occupancies.split(','))
       : undefined,
+    ownerIds: params.ownerIds
+      ? new Set(params.ownerIds.split(','))
+      : undefined,
     relativeLocations: params.relativeLocations
       ? new Set(params.relativeLocations.split(','))
       : undefined,
@@ -88,9 +92,20 @@ const find = http.get<
     housingKinds,
     localities,
     occupancies,
+    ownerIds,
     relativeLocations,
     statuses
   } = parseQueryParams(url);
+
+  // Explicit selection ("select all" / a set of ids), used by the review flow.
+  const query = qs.parse(url.search, { ignoreQueryPrefix: true }) as {
+    all?: string;
+    housingIds?: string;
+  };
+  const selection = {
+    all: query.all === 'true',
+    housingIds: query.housingIds ? query.housingIds.split(',') : undefined
+  };
 
   const subset = pipe(
     data.housings,
@@ -114,9 +129,11 @@ const find = http.get<
       housingKinds,
       localities,
       occupancies,
+      ownerIds,
       statuses,
       relativeLocations
-    })
+    }),
+    filterByHousingIds(selection)
   );
 
   // Server-side pagination, so the list pager behaves correctly with hundreds
@@ -392,6 +409,7 @@ interface FilterParams {
   housingKinds?: Set<string>;
   localities?: Set<string>;
   occupancies?: Set<string>;
+  ownerIds?: Set<string>;
   statuses?: Set<number>;
   relativeLocations?: Set<string>;
 }
@@ -435,6 +453,13 @@ export function byLocality(
   localities: Set<string>
 ): Predicate.Predicate<HousingDTO> {
   return (housing) => localities.has(housing.geoCode);
+}
+
+export function byOwner(owners: Set<string>): Predicate.Predicate<HousingDTO> {
+  return (housing) =>
+    (data.housingOwners.get(housing.id) ?? []).some((housingOwner) =>
+      owners.has(housingOwner.id)
+    );
 }
 
 export function byDataFileYearsIncluded(
@@ -482,6 +507,7 @@ export function filter(params: FilterParams) {
     params.housingKinds ? byKind(params.housingKinds) : null,
     params.localities ? byLocality(params.localities) : null,
     params.occupancies ? byOccupancy(params.occupancies) : null,
+    params.ownerIds ? byOwner(params.ownerIds) : null,
     params.statuses ? byStatus(params.statuses) : null,
     params.relativeLocations
       ? byRelativeLocation(params.relativeLocations)
