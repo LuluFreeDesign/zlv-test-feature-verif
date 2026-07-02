@@ -1,5 +1,6 @@
 import { fr } from '@codegouvfr/react-dsfr';
 import Button from '@codegouvfr/react-dsfr/Button';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
@@ -8,6 +9,7 @@ import { type ReactNode } from 'react';
 import { match, Pattern } from 'ts-pattern';
 
 import AppLink from '~/components/_app/AppLink/AppLink';
+import ReviewHousingsButton from '~/components/HousingReview/ReviewHousingsButton';
 import { createCampaignFromGroupModal } from '~/components/Group/CreateCampaignFromGroupModal';
 import { createRemoveGroupModal } from '~/components/Group/RemoveGroupModal';
 import { createRenameGroupModal } from '~/components/Group/RenameGroupModal';
@@ -191,6 +193,20 @@ function Group(props: Readonly<GroupProps>) {
                 >
                   Créer une campagne
                 </FullWidthButton>
+              </li>
+
+              <li style={{ width: '100%' }}>
+                <Box
+                  sx={{
+                    width: '100%',
+                    '& > button': { width: '100%', justifyContent: 'center' }
+                  }}
+                >
+                  <ReviewHousingsButton
+                    filters={{ groupIds: [props.group.id] }}
+                    count={props.group.housingCount}
+                  />
+                </Box>
               </li>
 
               <li style={{ width: '100%' }}>

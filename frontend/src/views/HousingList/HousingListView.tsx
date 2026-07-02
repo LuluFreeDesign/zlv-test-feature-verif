@@ -17,6 +17,7 @@ import HousingCreationModal from '~/components/modals/HousingCreationModal/Housi
 import { useDocumentTitle } from '~/hooks/useDocumentTitle';
 import { useFilters } from '~/hooks/useFilters';
 import { useNotification } from '~/hooks/useNotification';
+import ReviewHousingsButton from '~/components/HousingReview/ReviewHousingsButton';
 import { useSelection } from '~/hooks/useSelection';
 import { useAppDispatch, useAppSelector } from '~/hooks/useStore';
 import { useUser } from '~/hooks/useUser';
@@ -117,6 +118,21 @@ const HousingListView = () => {
 
   const [showExportAlert, setShowExportAlert] = useState(false);
 
+  // Number of housings that would be reviewed: the current selection if any,
+  // otherwise the whole filtered list of the active tab.
+  const filteredTotal = count?.housing ?? 0;
+  const reviewCount = selected.all
+    ? Math.max(filteredTotal - selected.ids.length, 0)
+    : selected.ids.length > 0
+      ? selected.ids.length
+      : filteredTotal;
+  const reviewFilters = {
+    ...filters,
+    status: activeStatus.value,
+    all: selected.all,
+    housingIds: selected.ids
+  };
+
   return (
     <HousingEditionProvider>
       <Stack direction="row">
@@ -193,6 +209,14 @@ const HousingListView = () => {
                     <HousingCreationModal onFinish={onFinish} />
                   </li>
                 )}
+
+                <li>
+                  <ReviewHousingsButton
+                    className="fr-ml-3v"
+                    filters={reviewFilters}
+                    count={reviewCount}
+                  />
+                </li>
 
                 <li>
                   <Button

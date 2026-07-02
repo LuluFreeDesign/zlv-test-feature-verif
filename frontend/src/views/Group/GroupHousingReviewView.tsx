@@ -23,7 +23,8 @@ import {
   useForm,
   type SubmitHandler
 } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
+import type { HousingFiltersDTO } from '@zerologementvacant/models';
 import { array, number, object, string, type InferType } from 'yup';
 
 import DPE from '~/components/DPE/DPE';
@@ -110,12 +111,16 @@ function fakeRepresentativeDpe(housingId: string): EnergyConsumption {
  * list.
  */
 function HousingReviewView() {
-  const { housingId } = useParams<{ housingId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Same filters as the parc (Redux store), so the review iterates exactly the
-  // list the user is looking at.
-  const filters = useAppSelector((state) => state.housing.filters);
+  // The set of housings to review is described by filters passed via the router
+  // state (parc filters + selection, a single owner, a group…). Falls back to
+  // the current parc filters when opened directly.
+  const storeFilters = useAppSelector((state) => state.housing.filters);
+  const stateFilters = (location.state as { filters?: HousingFiltersDTO } | null)
+    ?.filters;
+  const filters = stateFilters ?? storeFilters;
   const { data: housingResult, isLoading: isLoadingHousings } =
     useFindHousingQuery({
       filters,
@@ -123,9 +128,7 @@ function HousingReviewView() {
     });
   const housings = housingResult?.entities ?? [];
 
-  const [selectedId, setSelectedId] = useState<string | null>(
-    housingId ?? null
-  );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const pendingAction = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -195,8 +198,8 @@ function HousingReviewView() {
     guarded(() => setSelectedId(id));
   }
 
-  function backToParc(): void {
-    guarded(() => navigate('/parc-de-logements'));
+  function back(): void {
+    guarded(() => navigate(-1));
   }
 
   const submit: SubmitHandler<ReviewFormSchema> = (payload) => {
@@ -279,8 +282,8 @@ function HousingReviewView() {
           </Typography>
 
           <Stack direction="row" spacing="0.5rem" useFlexGap>
-            <Button priority="secondary" onClick={backToParc}>
-              Revenir au parc
+            <Button priority="secondary" onClick={back}>
+              Retour
             </Button>
             <Button
               priority="tertiary"

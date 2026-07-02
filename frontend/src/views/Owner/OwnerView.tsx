@@ -12,6 +12,8 @@ import OwnerCard from '~/components/Owner/OwnerCard';
 import createOwnerEditionModal from '~/components/Owner/OwnerEditionModal';
 import OwnerHousingCardGrid from '~/components/Owner/OwnerHousingCardGrid';
 import OwnerKindIcon from '~/components/Owner/OwnerKindIcon';
+import ReviewHousingsButton from '~/components/HousingReview/ReviewHousingsButton';
+import { useCountHousingQuery } from '~/services/housing.service';
 import { useGetOwnerQuery } from '~/services/owner.service';
 import NotFoundView from '~/views/NotFoundView';
 
@@ -24,6 +26,10 @@ function OwnerView() {
     isLoading,
     isError
   } = useGetOwnerQuery(params.id ?? skipToken);
+
+  const { data: housingCount } = useCountHousingQuery(
+    owner ? { ownerIds: [owner.id] } : skipToken
+  );
 
   if (isError || (!isLoading && !owner)) {
     return <NotFoundView />;
@@ -44,11 +50,28 @@ function OwnerView() {
             }
           ]}
         />
-        <Stack spacing="0.25rem" useFlexGap>
-          <Typography component="h1" variant="h3">
-            {owner ? getOwnerDisplayName(owner) : null}
-          </Typography>
-          {owner?.kind ? <OwnerKindIcon kind={owner.kind} /> : null}
+        <Stack
+          direction="row"
+          spacing="1rem"
+          useFlexGap
+          sx={{
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            flexWrap: 'wrap'
+          }}
+        >
+          <Stack spacing="0.25rem" useFlexGap>
+            <Typography component="h1" variant="h3">
+              {owner ? getOwnerDisplayName(owner) : null}
+            </Typography>
+            {owner?.kind ? <OwnerKindIcon kind={owner.kind} /> : null}
+          </Stack>
+          {owner ? (
+            <ReviewHousingsButton
+              filters={{ ownerIds: [owner.id] }}
+              count={housingCount?.housing ?? 0}
+            />
+          ) : null}
         </Stack>
       </Stack>
       <Grid container columnSpacing="3rem">
