@@ -1,5 +1,6 @@
 import { fr } from '@codegouvfr/react-dsfr';
 import Tabs from '@codegouvfr/react-dsfr/Tabs';
+import type { ReactNode } from 'react';
 
 import { useStatusTabs } from '~/hooks/useStatusTabs';
 import { type HousingFilters } from '~/models/HousingFilters';
@@ -12,12 +13,15 @@ export interface HousingListTabsProps {
    */
   showCount?: boolean;
   showRemoveGroupHousing?: boolean;
+  /** Actions rendered inside the table header row (review, add-to-group…). */
+  headerActions?: ReactNode;
 }
 
 function HousingListTabs({
   filters,
   showCount,
-  showRemoveGroupHousing
+  showRemoveGroupHousing,
+  headerActions
 }: Readonly<HousingListTabsProps>) {
   const { activeStatus, activeTab, tabs, setActiveTab } =
     useStatusTabs(filters);
@@ -42,6 +46,7 @@ function HousingListTabs({
         showCount={showCount}
         showRemoveGroupHousing={showRemoveGroupHousing}
         status={activeStatus.value}
+        headerActions={headerActions}
       />
     </Tabs>
   );

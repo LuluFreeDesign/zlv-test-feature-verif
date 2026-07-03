@@ -133,6 +133,33 @@ const HousingListView = () => {
     housingIds: selected.ids
   };
 
+  // Actions shown inside the table header row (next to the count / inside the
+  // selection bar): review + add-to-group.
+  const headerActions = (
+    <>
+      <ReviewHousingsButton filters={reviewFilters} count={reviewCount} />
+      <Button
+        priority="primary"
+        iconId="fr-icon-building-line"
+        onClick={() => {
+          if (hasSelected) {
+            groupAddHousingModal.open();
+            if (showExportAlert) {
+              setShowExportAlert(false);
+            }
+          } else {
+            if (view === 'map') {
+              dispatch(changeView('list'));
+            }
+            setShowExportAlert(true);
+          }
+        }}
+      >
+        Intégrer dans un groupe
+      </Button>
+    </>
+  );
+
   return (
     <HousingEditionProvider>
       <Stack direction="row">
@@ -209,37 +236,6 @@ const HousingListView = () => {
                     <HousingCreationModal onFinish={onFinish} />
                   </li>
                 )}
-
-                <li>
-                  <ReviewHousingsButton
-                    className="fr-ml-3v"
-                    filters={reviewFilters}
-                    count={reviewCount}
-                  />
-                </li>
-
-                <li>
-                  <Button
-                    className="fr-ml-3v"
-                    priority="primary"
-                    iconId="fr-icon-building-line"
-                    onClick={() => {
-                      if (hasSelected) {
-                        groupAddHousingModal.open();
-                        if (showExportAlert) {
-                          setShowExportAlert(false);
-                        }
-                      } else {
-                        if (view === 'map') {
-                          dispatch(changeView('list'));
-                        }
-                        setShowExportAlert(true);
-                      }
-                    }}
-                  >
-                    Intégrer dans un groupe
-                  </Button>
-                </li>
               </Stack>
 
               <Alert
@@ -255,7 +251,7 @@ const HousingListView = () => {
               {view === 'map' ? (
                 <HousingListMap filters={filters} />
               ) : (
-                <HousingListTabs filters={filters} />
+                <HousingListTabs filters={filters} headerActions={headerActions} />
               )}
             </Stack>
           </Grid>
