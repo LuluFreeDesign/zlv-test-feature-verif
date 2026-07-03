@@ -2,8 +2,9 @@ import { Alert } from '@codegouvfr/react-dsfr/Alert';
 import Button from '@codegouvfr/react-dsfr/Button';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
 import { HousingStatus, type Occupancy } from '@zerologementvacant/models';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useParams } from 'react-router';
 
 import { useNotification } from '~/hooks/useNotification';
@@ -37,6 +38,8 @@ export type HousingListTabProps = {
   filters: HousingFilters;
   status?: HousingStatus;
   onCountFilteredHousing?: (count: HousingCount) => void;
+  /** Actions rendered inside the table header row (review, add-to-group…). */
+  headerActions?: ReactNode;
 };
 
 function HousingListTab(props: HousingListTabProps) {
@@ -167,22 +170,50 @@ function HousingListTab(props: HousingListTabProps) {
         />
       ) : null}
 
-      {showCount &&
-        !isCounting &&
-        filteredHousingCount !== undefined &&
-        filteredOwnerCount !== undefined && (
-          <Typography sx={{ padding: 2 }}>
-            {displayHousingCount({
-              filteredHousingCount,
-              filteredOwnerCount,
-              totalCount,
-              status: props.status
-            })}
-          </Typography>
-        )}
-
       <HousingList filters={props.filters} onSelectHousing={setSelected}>
-        <SelectableListHeader entity="logement" default={<></>}>
+        <SelectableListHeader
+          entity="logement"
+          default={
+            showCount &&
+            !isCounting &&
+            filteredHousingCount !== undefined &&
+            filteredOwnerCount !== undefined ? (
+              <Stack
+                direction="row"
+                useFlexGap
+                sx={{
+                  width: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  margin: '1rem 0'
+                }}
+              >
+                <Typography sx={{ fontWeight: 500 }}>
+                  {displayHousingCount({
+                    filteredHousingCount,
+                    filteredOwnerCount,
+                    totalCount,
+                    status: props.status
+                  })}
+                </Typography>
+                {props.headerActions ? (
+                  <Stack
+                    direction="row"
+                    useFlexGap
+                    sx={{ gap: '0.5rem', alignItems: 'center' }}
+                  >
+                    {props.headerActions}
+                  </Stack>
+                ) : null}
+              </Stack>
+            ) : (
+              <></>
+            )
+          }
+        >
           <SelectableListHeaderActions>
             {filteredHousingCount !== undefined && filteredHousingCount > 0 && (
               <>
@@ -203,6 +234,8 @@ function HousingListTab(props: HousingListTabProps) {
                     onSubmit={doRemoveGroupHousing}
                   />
                 )}
+
+                {props.headerActions}
 
                 <HousingListEditionSideMenu
                   count={selectedCount}
