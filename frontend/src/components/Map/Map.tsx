@@ -55,6 +55,8 @@ export interface MapProps {
   minZoom?: number;
   maxZoom?: number;
   showMapSettings?: boolean;
+  /** Hide the "Grouper les bâtiments" toggle (e.g. in the review screen). */
+  hideClusterizeControl?: boolean;
   style?: CSSProperties;
   onMove?: (viewState: ViewState) => void;
 }
@@ -234,6 +236,7 @@ function Map(props: MapProps) {
             clusterize={clusterize}
             perimeters={showPerimeters}
             show={props.showMapSettings}
+            hideClusterize={props.hideClusterizeControl}
             onClusterizeChange={setClusterize}
             onPerimetersChange={setShowPerimeters}
           />

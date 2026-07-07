@@ -286,22 +286,6 @@ function HousingReviewView() {
               Retour
             </Button>
             <Button
-              priority="tertiary"
-              iconId="fr-icon-arrow-up-s-line"
-              title="Logement précédent"
-              disabled={selectedIndex <= 0}
-              onClick={() => guarded(() => goToIndex(selectedIndex - 1))}
-            />
-            <Button
-              priority="tertiary"
-              iconId="fr-icon-arrow-down-s-line"
-              title="Logement suivant"
-              disabled={
-                selectedIndex < 0 || selectedIndex >= housings.length - 1
-              }
-              onClick={() => guarded(() => goToIndex(selectedIndex + 1))}
-            />
-            <Button
               priority="primary"
               iconId="fr-icon-check-line"
               onClick={form.handleSubmit(submit)}
@@ -420,6 +404,7 @@ function HousingReviewView() {
                   {/* Right: note, map, DPE */}
                   <Grid size={{ xs: 12, md: 5 }}>
                     <Stack spacing="1.5rem" useFlexGap>
+                      <Stack spacing="0.75rem" useFlexGap>
                       <AppTextInputNext<ReviewFormSchema, 'note'>
                         label="Nouvelle note"
                         name="note"
@@ -434,6 +419,7 @@ function HousingReviewView() {
                       <Box>
                         <Map
                           housingList={[selectedHousing]}
+                          hideClusterizeControl
                           viewState={{
                             longitude: selectedHousing.longitude,
                             latitude: selectedHousing.latitude,
@@ -442,7 +428,11 @@ function HousingReviewView() {
                             pitch: 0,
                             padding: { top: 0, bottom: 0, left: 0, right: 0 }
                           }}
-                          style={{ height: '7rem', width: '100%' }}
+                          style={{
+                            height: '350px',
+                            minHeight: '350px',
+                            width: '100%'
+                          }}
                         />
                         {streetViewUrl ? (
                           <Box sx={{ mt: '0.5rem', textAlign: 'right' }}>
@@ -462,6 +452,7 @@ function HousingReviewView() {
                           </Box>
                         ) : null}
                       </Box>
+                      </Stack>
 
                       <Stack component="section" spacing="0.25rem" useFlexGap>
                         <Typography sx={{ fontWeight: 500 }}>

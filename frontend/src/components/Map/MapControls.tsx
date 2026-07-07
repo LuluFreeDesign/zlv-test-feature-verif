@@ -14,6 +14,8 @@ interface Props {
    * @default true
    */
   show?: boolean;
+  /** Hide the "Grouper les bâtiments" toggle (e.g. in the review screen). */
+  hideClusterize?: boolean;
   onClusterizeChange(checked: boolean): void;
   onPerimetersChange(checked: boolean): void;
 }
@@ -39,13 +41,17 @@ function MapControls(props: Props) {
         <PerimetersModalOpener className="fr-my-1w" modal={perimetersModal} />
       )}
 
-      <hr />
+      {!props.hideClusterize && (
+        <>
+          <hr />
 
-      <ToggleSwitch
-        checked={props.clusterize}
-        label="Grouper les bâtiments"
-        onChange={props.onClusterizeChange}
-      />
+          <ToggleSwitch
+            checked={props.clusterize}
+            label="Grouper les bâtiments"
+            onChange={props.onClusterizeChange}
+          />
+        </>
+      )}
     </section>
   );
 }
