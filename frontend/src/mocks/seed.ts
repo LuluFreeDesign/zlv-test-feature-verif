@@ -30,11 +30,11 @@ export const DEMO_EMAIL = 'demo@zerologementvacant.beta.gouv.fr';
 
 /**
  * Number of housings to generate, spread across every commune of the EPCI
- * (weighted by population, so Vire Normandie concentrates most of them).
+ * (weighted by population, so Draguignan concentrates most of them).
  */
 const HOUSING_COUNT = 300;
 
-// Communes de la CC Intercom de la Vire au Noireau (SIREN 200068799) — source geo.api.gouv.fr.
+// Communes de la CA Dracénie Provence Verdon Agglomération (SIREN 248300493) — source geo.api.gouv.fr.
 // geoCode INSEE, code postal principal et coordonnées du centre (réels) pour la carte.
 const EPCI_COMMUNES: ReadonlyArray<{
   geoCode: string;
@@ -43,23 +43,29 @@ const EPCI_COMMUNES: ReadonlyArray<{
   center: { latitude: number; longitude: number };
   population: number;
 }> = [
-  { geoCode: '14762', postalCode: '14500', city: 'Vire Normandie', center: { latitude: 48.8199, longitude: -0.8700 }, population: 17457 },
-  { geoCode: '14061', postalCode: '14260', city: 'Souleuvre en Bocage', center: { latitude: 48.9616, longitude: -0.8400 }, population: 8629 },
-  { geoCode: '14174', postalCode: '14110', city: 'Condé-en-Normandie', center: { latitude: 48.8852, longitude: -0.5779 }, population: 5985 },
-  { geoCode: '14726', postalCode: '14350', city: 'Valdallière', center: { latitude: 48.8619, longitude: -0.7173 }, population: 5696 },
-  { geoCode: '14658', postalCode: '14380', city: 'Noues de Sienne', center: { latitude: 48.8297, longitude: -1.0280 }, population: 4207 },
-  { geoCode: '14357', postalCode: '14770', city: 'Terres de Druance', center: { latitude: 48.9278, longitude: -0.6531 }, population: 906 },
-  { geoCode: '14352', postalCode: '14380', city: 'Landelles-et-Coupigny', center: { latitude: 48.8968, longitude: -1.0013 }, population: 818 },
-  { geoCode: '14572', postalCode: '14110', city: 'Saint-Denis-de-Méré', center: { latitude: 48.8626, longitude: -0.5028 }, population: 754 },
-  { geoCode: '14127', postalCode: '14500', city: 'Campagnolles', center: { latitude: 48.8893, longitude: -0.9370 }, population: 562 },
-  { geoCode: '14559', postalCode: '14380', city: 'Saint-Aubin-des-Bois', center: { latitude: 48.8336, longitude: -1.1339 }, population: 226 },
-  { geoCode: '14756', postalCode: '14570', city: 'La Villette', center: { latitude: 48.9089, longitude: -0.5428 }, population: 217 },
-  { geoCode: '14054', postalCode: '14380', city: 'Beaumesnil', center: { latitude: 48.8971, longitude: -0.9676 }, population: 207 },
-  { geoCode: '14424', postalCode: '14380', city: 'Le Mesnil-Robert', center: { latitude: 48.8801, longitude: -0.9731 }, population: 181 },
-  { geoCode: '14619', postalCode: '14380', city: 'Sainte-Marie-Outre-l’Eau', center: { latitude: 48.9302, longitude: -1.0287 }, population: 124 },
-  { geoCode: '14512', postalCode: '14110', city: 'Pontécoulant', center: { latitude: 48.8877, longitude: -0.5832 }, population: 71 },
-  { geoCode: '14511', postalCode: '14380', city: 'Pont-Bellanger', center: { latitude: 48.9361, longitude: -0.9833 }, population: 60 },
-  { geoCode: '14496', postalCode: '14770', city: 'Périgny', center: { latitude: 48.9180, longitude: -0.6054 }, population: 58 },
+  { geoCode: '83050', postalCode: '83300', city: 'Draguignan', center: { latitude: 43.5346, longitude: 6.4651 }, population: 40826 },
+  { geoCode: '83148', postalCode: '83550', city: 'Vidauban', center: { latitude: 43.4071, longitude: 6.4599 }, population: 12608 },
+  { geoCode: '83086', postalCode: '83490', city: 'Le Muy', center: { latitude: 43.4680, longitude: 6.5844 }, population: 10118 },
+  { geoCode: '83072', postalCode: '83510', city: 'Lorgues', center: { latitude: 43.4734, longitude: 6.3588 }, population: 9849 },
+  { geoCode: '83004', postalCode: '83460', city: 'Les Arcs', center: { latitude: 43.4533, longitude: 6.4862 }, population: 8109 },
+  { geoCode: '83141', postalCode: '83720', city: 'Trans-en-Provence', center: { latitude: 43.5025, longitude: 6.4869 }, population: 6905 },
+  { geoCode: '83058', postalCode: '83780', city: 'Flayosc', center: { latitude: 43.5441, longitude: 6.3577 }, population: 4673 },
+  { geoCode: '83121', postalCode: '83690', city: 'Salernes', center: { latitude: 43.5646, longitude: 6.2379 }, population: 4019 },
+  { geoCode: '83085', postalCode: '83920', city: 'La Motte', center: { latitude: 43.5091, longitude: 6.5506 }, population: 3071 },
+  { geoCode: '83056', postalCode: '83830', city: 'Figanières', center: { latitude: 43.5642, longitude: 6.4915 }, population: 2762 },
+  { geoCode: '83028', postalCode: '83830', city: 'Callas', center: { latitude: 43.5687, longitude: 6.5735 }, population: 2124 },
+  { geoCode: '83134', postalCode: '83460', city: 'Taradeau', center: { latitude: 43.4657, longitude: 6.4283 }, population: 1945 },
+  { geoCode: '83082', postalCode: '83131', city: 'Montferrat', center: { latitude: 43.6336, longitude: 6.4774 }, population: 1719 },
+  { geoCode: '83011', postalCode: '83830', city: 'Bargemon', center: { latitude: 43.6344, longitude: 6.5439 }, population: 1433 },
+  { geoCode: '83003', postalCode: '83111', city: 'Ampus', center: { latitude: 43.6218, longitude: 6.3683 }, population: 919 },
+  { geoCode: '83154', postalCode: '83510', city: 'Saint-Antonin-du-Var', center: { latitude: 43.5071, longitude: 6.2935 }, population: 870 },
+  { geoCode: '83128', postalCode: '83690', city: 'Sillans-la-Cascade', center: { latitude: 43.5650, longitude: 6.1549 }, population: 787 },
+  { geoCode: '83041', postalCode: '83830', city: 'Claviers', center: { latitude: 43.5998, longitude: 6.5845 }, population: 727 },
+  { geoCode: '83038', postalCode: '83300', city: 'Châteaudouble', center: { latitude: 43.6259, longitude: 6.4420 }, population: 476 },
+  { geoCode: '83044', postalCode: '83840', city: 'Comps-sur-Artuby', center: { latitude: 43.7075, longitude: 6.5060 }, population: 339 },
+  { geoCode: '83109', postalCode: '83840', city: 'La Roque-Esclapon', center: { latitude: 43.7210, longitude: 6.6479 }, population: 261 },
+  { geoCode: '83013', postalCode: '83840', city: 'La Bastide', center: { latitude: 43.7464, longitude: 6.6327 }, population: 227 },
+  { geoCode: '83010', postalCode: '83840', city: 'Bargème', center: { latitude: 43.7279, longitude: 6.5697 }, population: 207 },
 ];
 
 // Generic but plausible street names found in most French communes. Combined
@@ -97,7 +103,7 @@ let cache: DemoSeed | null = null;
 
 /**
  * Populate the in-memory MSW store (`data`) with a coherent and reproducible
- * data set covering the whole Vire au Noireau EPCI. Safe to call
+ * data set covering the whole Dracénie Provence Verdon EPCI. Safe to call
  * multiple times — only seeds once.
  */
 export function seed(): DemoSeed {
@@ -112,9 +118,9 @@ export function seed(): DemoSeed {
   // --- Establishment -------------------------------------------------------
   const establishment: EstablishmentDTO = {
     ...genEstablishmentDTO(),
-    name: 'Test Vire au Noireau',
-    shortName: 'Vire au Noireau',
-    siren: '200068799',
+    name: 'Test Dracénie Provence Verdon Agglomération',
+    shortName: 'DPVa',
+    siren: '248300493',
     geoCodes: EPCI_COMMUNES.map((commune) => commune.geoCode),
     available: true
   };
@@ -138,7 +144,7 @@ export function seed(): DemoSeed {
   data.owners.push(...owners);
 
   // Pick a commune weighted by population, so the distribution looks realistic
-  // (Vire Normandie gets the lion's share, the small communes only a few housings).
+  // (Draguignan gets the lion's share, the small communes only a few housings).
   const communeChoices = EPCI_COMMUNES.map((commune) => ({
     weight: commune.population,
     value: commune

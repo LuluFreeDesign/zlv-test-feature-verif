@@ -73,6 +73,37 @@ export const ownerHandlers: RequestHandler[] = [
     }
   ),
 
+  // Housings owned by an owner (owner page). Returns each housing merged with
+  // this owner's rank info — the same set the "Passer en revue N" count uses.
+  http.get<PathParams, never, unknown>(
+    `${config.apiEndpoint}/owners/:id/housings`,
+    ({ params }) => {
+      const ownerHousings = data.housings.flatMap((housing) => {
+        const housingOwner = data.housingOwners
+          .get(housing.id)
+          ?.find((ho) => ho.id === params.id);
+        if (!housingOwner) {
+          return [];
+        }
+        return [
+          {
+            ...housing,
+            rank: housingOwner.rank,
+            idprocpte: housingOwner.idprocpte,
+            idprodroit: housingOwner.idprodroit,
+            locprop: housingOwner.locprop,
+            propertyRight: housingOwner.propertyRight,
+            relativeLocation: housingOwner.relativeLocation,
+            absoluteDistance: housingOwner.absoluteDistance
+          }
+        ];
+      });
+      return HttpResponse.json(ownerHousings, {
+        status: constants.HTTP_STATUS_OK
+      });
+    }
+  ),
+
   http.post<never, SearchPayloadDTO, Paginated<OwnerDTO>>(
     `${config.apiEndpoint}/owners`,
     async ({ request }) => {
