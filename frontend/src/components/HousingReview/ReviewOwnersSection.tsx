@@ -222,7 +222,12 @@ function ReviewOwnersSection(props: Readonly<ReviewOwnersSectionProps>) {
       <Box
         sx={{
           // Fit within the column on desktop, allow horizontal scroll on mobile.
-          '& .fr-table': { overflowX: { xs: 'auto', md: 'visible' } },
+          // Drop the DSFR table's default bottom margin so the gap to the next
+          // section is exactly the parent Stack's 24px.
+          '& .fr-table': {
+            overflowX: { xs: 'auto', md: 'visible' },
+            marginBottom: 0
+          },
           '& table': { width: '100%' },
           '& th:nth-of-type(1), & td:nth-of-type(1)': { minWidth: '11rem' }
         }}
