@@ -22,6 +22,7 @@ import { useSelection } from '~/hooks/useSelection';
 import { useAppDispatch, useAppSelector } from '~/hooks/useStore';
 import { useUser } from '~/hooks/useUser';
 import type { Housing } from '~/models/Housing';
+import { pluralize } from '~/utils/stringUtils';
 import {
   useAddGroupHousingMutation,
   useCreateGroupMutation
@@ -92,7 +93,7 @@ const HousingListView = () => {
     ...filters,
     status: activeStatus.value
   });
-  const { selected, hasSelected } = useSelection(totalCount?.housing ?? 0, {
+  const { selected } = useSelection(totalCount?.housing ?? 0, {
     storage: 'store'
   });
   const { data: count, isLoading: isCounting } = useCountHousingQuery({
@@ -116,12 +117,12 @@ const HousingListView = () => {
     }
   });
 
-  const [showExportAlert, setShowExportAlert] = useState(false);
-
-  // Number of housings that would be reviewed: the current selection if any,
-  // otherwise the whole filtered list of the active tab.
+  // Number of housings the action buttons apply to: the current selection if
+  // any, otherwise the whole filtered list of the active tab. Both "Passer en
+  // revue" and "Intégrer dans un groupe" share this exact same set (same
+  // filters/selection), so they always agree.
   const filteredTotal = count?.housing ?? 0;
-  const reviewCount = selected.all
+  const actionCount = selected.all
     ? Math.max(filteredTotal - selected.ids.length, 0)
     : selected.ids.length > 0
       ? selected.ids.length
@@ -134,28 +135,18 @@ const HousingListView = () => {
   };
 
   // Actions shown inside the table header row (next to the count / inside the
-  // selection bar): review + add-to-group.
+  // selection bar): review + add-to-group. Both default to the whole filtered
+  // list when nothing is selected.
   const headerActions = (
     <>
-      <ReviewHousingsButton filters={reviewFilters} count={reviewCount} />
+      <ReviewHousingsButton filters={reviewFilters} count={actionCount} />
       <Button
         priority="primary"
         iconId="fr-icon-building-line"
-        onClick={() => {
-          if (hasSelected) {
-            groupAddHousingModal.open();
-            if (showExportAlert) {
-              setShowExportAlert(false);
-            }
-          } else {
-            if (view === 'map') {
-              dispatch(changeView('list'));
-            }
-            setShowExportAlert(true);
-          }
-        }}
+        onClick={groupAddHousingModal.open}
       >
-        Intégrer dans un groupe
+        Intégrer {actionCount} {pluralize(actionCount)('logement')} dans un
+        groupe
       </Button>
     </>
   );
@@ -237,16 +228,6 @@ const HousingListView = () => {
                   </li>
                 )}
               </Stack>
-
-              <Alert
-                className="fr-mb-2w"
-                closable
-                isClosed={!showExportAlert}
-                severity="info"
-                title="Aucun logement sélectionné"
-                description="Sélectionnez d’abord les logements à intégrer dans le groupe, puis cliquez sur le bouton “Intégrer dans un groupe“."
-                onClose={() => setShowExportAlert(false)}
-              />
 
               {view === 'map' ? (
                 <HousingListMap filters={filters} />
