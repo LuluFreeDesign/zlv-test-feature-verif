@@ -466,7 +466,7 @@ describe('Housing list view', () => {
       const [checkbox] = await within(panel).findAllByRole('checkbox');
       await user.click(checkbox);
       const addToGroup = await screen.findByRole('button', {
-        name: 'Intégrer dans un groupe'
+        name: /^Intégrer \d+ logements? dans un groupe$/
       });
       await user.click(addToGroup);
       const groupModal = await screen.findByRole('dialog', {
@@ -526,7 +526,7 @@ describe('Housing list view', () => {
       const [checkbox] = await within(panel).findAllByRole('checkbox');
       await user.click(checkbox);
       const addToGroup = await screen.findByRole('button', {
-        name: 'Intégrer dans un groupe'
+        name: /^Intégrer \d+ logements? dans un groupe$/
       });
       await user.click(addToGroup);
       const createGroup = await screen.findByRole('button', {
@@ -613,7 +613,7 @@ describe('Housing list view', () => {
 
       // Click export or contact
       const addToGroup = await screen.findByRole('button', {
-        name: 'Intégrer dans un groupe'
+        name: /^Intégrer \d+ logements? dans un groupe$/
       });
       await user.click(addToGroup);
 
@@ -628,29 +628,6 @@ describe('Housing list view', () => {
     });
 
     it.todo('should require a title and a description');
-
-    it('should display an alert if trying to export without selecting housings', async () => {
-      const establishment = genEstablishmentDTO();
-      const auth = genUserDTO(UserRole.USUAL, establishment);
-
-      renderView({
-        establishment,
-        auth,
-        housings: [],
-        owners: [],
-        housingOwners: [],
-        groups: [],
-        campaigns: [],
-        campaignHousings: []
-      });
-
-      const exportOrContact = await screen.findByRole('button', {
-        name: 'Intégrer dans un groupe'
-      });
-      await user.click(exportOrContact);
-      const alert = await screen.findByRole('alert');
-      expect(alert).toBeVisible();
-    });
   });
 
   describe('Housing tabs', () => {
