@@ -1,6 +1,6 @@
 import * as turf from '@turf/turf';
 import { fr } from '@codegouvfr/react-dsfr';
-import { mapStyles } from 'carte-facile';
+import { addOverlay, mapStyles, type OverlayType } from 'carte-facile';
 import { type CSSProperties, memo, useEffect, useMemo, useState } from 'react';
 import ReactiveMap, {
   NavigationControl,
@@ -57,6 +57,19 @@ export interface MapProps {
   showMapSettings?: boolean;
   /** Hide the "Grouper les bâtiments" toggle (e.g. in the review screen). */
   hideClusterizeControl?: boolean;
+  /**
+   * Map style selected by default.
+   * @default 'simple'
+   */
+  initialStyle?: keyof typeof mapStyles;
+  /** Overlays (e.g. "cadastre") turned on by default. */
+  initialOverlays?: OverlayType[];
+  /**
+   * Zoom level used when auto-centering on a single housing (no explicit
+   * viewState.zoom is preserved otherwise — see the fly-to effect below).
+   * @default 10
+   */
+  singleHousingZoom?: number;
   style?: CSSProperties;
   onMove?: (viewState: ViewState) => void;
 }
@@ -137,7 +150,7 @@ function Map(props: MapProps) {
         const [lng, lat] = points[0].geometry.coordinates as [number, number];
         map.flyTo({
           center: [lng, lat],
-          zoom: 10,
+          zoom: props.singleHousingZoom ?? 10,
           duration: 800
         });
       } else {
@@ -149,7 +162,21 @@ function Map(props: MapProps) {
         });
       }
     }
-  }, [map, points]);
+  }, [map, points, props.singleHousingZoom]);
+
+  // Turn on the requested overlays (e.g. cadastre) by default. `addOverlay`
+  // handles both the "map not loaded yet" and "already loaded" cases, and
+  // re-applies on style changes, so it's safe to call as soon as `map` and the
+  // overlay list are available. `addOverlay` needs the raw maplibre-gl Map
+  // instance — react-map-gl's `MapRef` deliberately omits addSource/addLayer
+  // (they "may break the react binding if called directly"), so we must go
+  // through `.getMap()`.
+  useEffect(() => {
+    if (map && props.initialOverlays?.length) {
+      addOverlay(map.getMap(), props.initialOverlays);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
 
   // MapLibre GL hardcodes aria-label="Map" on the canvas element.
   // Override it after the map is ready to satisfy RGAA 1.3.
@@ -182,7 +209,7 @@ function Map(props: MapProps) {
           {...viewState}
           attributionControl={{}}
           id="housingMap"
-          mapStyle={mapStyles.simple}
+          mapStyle={mapStyles[props.initialStyle ?? 'simple']}
           minZoom={props.minZoom}
           maxZoom={props.maxZoom}
           onMove={onMove}

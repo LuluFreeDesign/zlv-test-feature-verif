@@ -90,9 +90,7 @@ const unsavedModal = createModal({
   isOpenedByDefault: false
 });
 
-// Field widths matching the Figma (selects are not full-width).
-const OCCUPANCY_WIDTH = '21rem';
-const STATUS_WIDTH = '24rem';
+// DPE select is not full-width; Occupation/Statut de suivi are full-width.
 const DPE_WIDTH = '18rem';
 
 /** Deterministic fake "représentatif" DPE label per housing (no ADEME data). */
@@ -351,60 +349,71 @@ function HousingReviewView() {
                   </Button>
                 </Stack>
 
+                {/* Tight group: Occupation | Statut de suivi block, then the
+                    owners/note/map grid, with a minimal gap between them so
+                    the map and owners are visible right below the fold. */}
+                <Stack spacing="0.5rem" useFlexGap>
+                {/* Occupation | Statut de suivi — two tight, full-width
+                    columns, taking as little vertical space as possible so
+                    the map and owners are visible right below. */}
+                <Grid container columnSpacing="1.5rem" rowGap="0.5rem">
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Stack
+                      component="section"
+                      spacing="0.5rem"
+                      useFlexGap
+                      sx={{
+                        '& .fr-select-group': { marginBottom: '0 !important' }
+                      }}
+                    >
+                      <Typography component="h3" variant="h6" sx={{ mb: 0 }}>
+                        Occupation
+                      </Typography>
+
+                      <Controller<ReviewFormSchema, 'occupancy'>
+                        name="occupancy"
+                        render={({ field, fieldState }) => (
+                          <OccupancySelect
+                            label="Occupation actuelle"
+                            disabled={field.disabled}
+                            error={fieldState.error?.message}
+                            invalid={fieldState.invalid}
+                            value={field.value as Occupancy}
+                            onChange={field.onChange}
+                          />
+                        )}
+                      />
+
+                      <Controller<ReviewFormSchema, 'occupancyIntended'>
+                        name="occupancyIntended"
+                        render={({ field, fieldState }) => (
+                          <OccupancySelect
+                            label="Occupation prévisionnelle"
+                            disabled={field.disabled}
+                            error={fieldState.error?.message}
+                            invalid={fieldState.invalid}
+                            value={field.value as Occupancy | null}
+                            onChange={field.onChange}
+                          />
+                        )}
+                      />
+                    </Stack>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <HousingEditionMobilizationTab
+                      sections={['status']}
+                      compact
+                    />
+                  </Grid>
+                </Grid>
+
                 <Grid container columnSpacing="1.5rem">
-                  {/* Center: owners + occupation & follow-up */}
+                  {/* Center: owners, note, precisions */}
                   <Grid size={{ xs: 12, md: 7 }}>
                     <Stack spacing="1.5rem" useFlexGap>
                       <ReviewOwnersSection housing={selectedHousing} />
 
-                      <Stack component="section" spacing="1rem" useFlexGap>
-                        <Typography component="h3" variant="h6">
-                          Occupation et suivi
-                        </Typography>
-
-                        <Box sx={{ maxWidth: OCCUPANCY_WIDTH }}>
-                          <Controller<ReviewFormSchema, 'occupancy'>
-                            name="occupancy"
-                            render={({ field, fieldState }) => (
-                              <OccupancySelect
-                                label="Occupation actuelle"
-                                disabled={field.disabled}
-                                error={fieldState.error?.message}
-                                invalid={fieldState.invalid}
-                                value={field.value as Occupancy}
-                                onChange={field.onChange}
-                              />
-                            )}
-                          />
-                        </Box>
-
-                        <Box sx={{ maxWidth: OCCUPANCY_WIDTH }}>
-                          <Controller<ReviewFormSchema, 'occupancyIntended'>
-                            name="occupancyIntended"
-                            render={({ field, fieldState }) => (
-                              <OccupancySelect
-                                label="Occupation prévisionnelle"
-                                disabled={field.disabled}
-                                error={fieldState.error?.message}
-                                invalid={fieldState.invalid}
-                                value={field.value as Occupancy | null}
-                                onChange={field.onChange}
-                              />
-                            )}
-                          />
-                        </Box>
-
-                        <Box sx={{ maxWidth: STATUS_WIDTH }}>
-                          <HousingEditionMobilizationTab />
-                        </Box>
-                      </Stack>
-                    </Stack>
-                  </Grid>
-
-                  {/* Right: note, map, DPE */}
-                  <Grid size={{ xs: 12, md: 5 }}>
-                    <Stack spacing="1.5rem" useFlexGap>
-                      <Stack spacing="0.75rem" useFlexGap>
                       <AppTextInputNext<ReviewFormSchema, 'note'>
                         label="Nouvelle note"
                         name="note"
@@ -416,21 +425,33 @@ function HousingReviewView() {
                         }
                       />
 
+                      <HousingEditionMobilizationTab
+                        sections={['precisions']}
+                      />
+                    </Stack>
+                  </Grid>
+
+                  {/* Right: map, DPE */}
+                  <Grid size={{ xs: 12, md: 5 }}>
+                    <Stack spacing="1.5rem" useFlexGap>
                       <Box>
                         <Map
                           housingList={[selectedHousing]}
                           hideClusterizeControl
+                          initialStyle="aerial"
+                          initialOverlays={['cadastre']}
+                          singleHousingZoom={18}
                           viewState={{
                             longitude: selectedHousing.longitude,
                             latitude: selectedHousing.latitude,
-                            zoom: 16,
+                            zoom: 18,
                             bearing: 0,
                             pitch: 0,
                             padding: { top: 0, bottom: 0, left: 0, right: 0 }
                           }}
                           style={{
-                            height: '350px',
-                            minHeight: '350px',
+                            height: '500px',
+                            minHeight: '500px',
                             width: '100%'
                           }}
                         />
@@ -452,7 +473,6 @@ function HousingReviewView() {
                           </Box>
                         ) : null}
                       </Box>
-                      </Stack>
 
                       <Stack component="section" spacing="0.25rem" useFlexGap>
                         <Typography sx={{ fontWeight: 500 }}>
@@ -486,6 +506,7 @@ function HousingReviewView() {
                     </Stack>
                   </Grid>
                 </Grid>
+                </Stack>
               </Stack>
             </FormProvider>
           ) : (
