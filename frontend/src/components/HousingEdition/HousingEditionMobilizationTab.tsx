@@ -82,13 +82,11 @@ function HousingEditionMobilizationTab(
           }}
           size={12}
         >
-          <Typography
-            component="h3"
-            variant="h6"
-            sx={props.compact ? { mb: 0 } : undefined}
-          >
-            Statut de suivi
-          </Typography>
+          {!props.compact && (
+            <Typography component="h3" variant="h6">
+              Statut de suivi
+            </Typography>
+          )}
           <HousingStatusSelect
             error={statusFieldState.error?.message}
             invalid={statusFieldState.invalid}

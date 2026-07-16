@@ -366,10 +366,6 @@ function HousingReviewView() {
                         '& .fr-select-group': { marginBottom: '0 !important' }
                       }}
                     >
-                      <Typography component="h3" variant="h6" sx={{ mb: 0 }}>
-                        Occupation
-                      </Typography>
-
                       <Controller<ReviewFormSchema, 'occupancy'>
                         name="occupancy"
                         render={({ field, fieldState }) => (
