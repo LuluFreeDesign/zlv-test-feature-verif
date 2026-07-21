@@ -106,7 +106,7 @@ export const groupHandlers: RequestHandler[] = [
   // Add housings to an existing group
   http.post<GroupParams, GroupPayloadDTO['housing']>(
     `${config.apiEndpoint}/groups/:id/housing`,
-    async ({ params }) => {
+    async ({ params, request }) => {
       const group = data.groups.find((group) => group.id === params.id);
       if (!group) {
         return HttpResponse.json(
@@ -118,10 +118,24 @@ export const groupHandlers: RequestHandler[] = [
         );
       }
 
+      // Honour the selection payload exactly like the create handler: `all`
+      // means "everything matching the filters except the listed ids", while
+      // `!all` means "only the listed ids". Ignoring it would wrongly merge the
+      // whole parc into the group.
+      const payload = await request.json();
+      const ids = new Set(payload?.ids ?? []);
+      const all = payload?.all ?? false;
+      const filtered = payload?.filters
+        ? filterByDTO(payload.filters)([...data.housings])
+        : [...data.housings];
+      const selectedHousings = all
+        ? filtered.filter((housing) => !ids.has(housing.id))
+        : data.housings.filter((housing) => ids.has(housing.id));
+
       const groupHousings = data.groupHousings.get(group.id) ?? [];
       data.groupHousings.set(group.id, [
         ...Array.dedupeWith(
-          [...groupHousings, ...data.housings],
+          [...groupHousings, ...selectedHousings.map((housing) => ({ id: housing.id }))],
           (a, b) => a.id === b.id
         )
       ]);

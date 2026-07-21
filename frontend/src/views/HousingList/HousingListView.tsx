@@ -127,11 +127,19 @@ const HousingListView = () => {
     : selected.ids.length > 0
       ? selected.ids.length
       : filteredTotal;
+  // When nothing is selected, both actions target the WHOLE filtered list.
+  // That means `all: true` (everything matching the filters, no exclusions) —
+  // NOT `all: false, ids: []`, which the API reads as "only these zero ids" and
+  // would produce an empty group. Otherwise use the real selection (explicit
+  // ids, or select-all with deselected exclusions).
+  const selectionEmpty = !selected.all && selected.ids.length === 0;
+  const effectiveAll = selectionEmpty ? true : selected.all;
+  const effectiveIds = selected.ids;
   const reviewFilters = {
     ...filters,
     status: activeStatus.value,
-    all: selected.all,
-    housingIds: selected.ids
+    all: effectiveAll,
+    housingIds: effectiveIds
   };
 
   // Actions shown inside the table header row (next to the count / inside the
@@ -249,8 +257,8 @@ const HousingListView = () => {
         onExistingGroup={(group) => {
           addGroupHousing({
             id: group.id,
-            all: selected.all,
-            ids: selected.ids,
+            all: effectiveAll,
+            ids: effectiveIds,
             filters: {
               ...filters,
               status: activeStatus.value
@@ -280,8 +288,8 @@ const HousingListView = () => {
             title,
             description,
             housing: {
-              all: selected.all,
-              ids: selected.ids,
+              all: effectiveAll,
+              ids: effectiveIds,
               filters: {
                 ...filters,
                 status: activeStatus.value
