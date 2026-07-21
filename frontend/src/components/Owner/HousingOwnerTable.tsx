@@ -42,6 +42,13 @@ export interface HousingOwnerTableProps {
   empty?: ReactNode;
   /** Optional action rendered on the same row as the title (e.g. a button). */
   action?: ReactNode;
+  /**
+   * Show the contact rank underneath the owner's name in the "name" column
+   * instead of a separate "rank" column, so the table takes up much less
+   * width (e.g. the housing review screen).
+   * @default false
+   */
+  combineNameAndRank?: boolean;
   onEdit?(housingOwner: HousingOwner): void;
 }
 
@@ -74,11 +81,22 @@ function HousingOwnerTable(props: HousingOwnerTableProps) {
             multiline: true
           }
         },
-        header: 'Identité propriétaire',
+        header: props.combineNameAndRank
+          ? 'Identité du propriétaire'
+          : 'Identité propriétaire',
         cell: ({ row }) => (
-          <AppLink isSimple size="sm" to={`/proprietaires/${row.original.id}`}>
-            {getOwnerDisplayName(row.original)}
-          </AppLink>
+          <Stack spacing="0.25rem" useFlexGap>
+            <AppLink
+              isSimple
+              size="sm"
+              to={`/proprietaires/${row.original.id}`}
+            >
+              {getOwnerDisplayName(row.original)}
+            </AppLink>
+            {props.combineNameAndRank && (
+              <RankBadge value={row.original.rank} />
+            )}
+          </Stack>
         )
       }),
       columnHelper.accessor('kind', {
@@ -143,7 +161,7 @@ function HousingOwnerTable(props: HousingOwnerTableProps) {
         )
       })
     ],
-    [columnHelper, onEdit, isIgnored]
+    [columnHelper, onEdit, isIgnored, props.combineNameAndRank]
   );
 
   if (props.owners.length === 0 && !props.isLoading) {

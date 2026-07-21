@@ -248,7 +248,8 @@ function ReviewOwnersSection(props: Readonly<ReviewOwnersSectionProps>) {
           housing={housing}
           owners={activeOwners}
           isLoading={isLoading}
-          columns={['name', 'rank', 'actions']}
+          columns={['name', 'actions']}
+          combineNameAndRank
           onEdit={onOwnerEdit}
         />
       </Box>

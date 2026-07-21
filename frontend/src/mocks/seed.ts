@@ -30,11 +30,11 @@ export const DEMO_EMAIL = 'demo@zerologementvacant.beta.gouv.fr';
 
 /**
  * Number of housings to generate, spread across every commune of the EPCI
- * (weighted by population, so Draguignan concentrates most of them).
+ * (weighted by population, so Tours concentrates most of them).
  */
 const HOUSING_COUNT = 300;
 
-// Communes de la CA Dracénie Provence Verdon Agglomération (SIREN 248300493) — source geo.api.gouv.fr.
+// Communes de Tours Métropole Val de Loire (SIREN 243700754) — source geo.api.gouv.fr.
 // geoCode INSEE, code postal principal et coordonnées du centre (réels) pour la carte.
 const EPCI_COMMUNES: ReadonlyArray<{
   geoCode: string;
@@ -43,29 +43,28 @@ const EPCI_COMMUNES: ReadonlyArray<{
   center: { latitude: number; longitude: number };
   population: number;
 }> = [
-  { geoCode: '83050', postalCode: '83300', city: 'Draguignan', center: { latitude: 43.5346, longitude: 6.4651 }, population: 40826 },
-  { geoCode: '83148', postalCode: '83550', city: 'Vidauban', center: { latitude: 43.4071, longitude: 6.4599 }, population: 12608 },
-  { geoCode: '83086', postalCode: '83490', city: 'Le Muy', center: { latitude: 43.4680, longitude: 6.5844 }, population: 10118 },
-  { geoCode: '83072', postalCode: '83510', city: 'Lorgues', center: { latitude: 43.4734, longitude: 6.3588 }, population: 9849 },
-  { geoCode: '83004', postalCode: '83460', city: 'Les Arcs', center: { latitude: 43.4533, longitude: 6.4862 }, population: 8109 },
-  { geoCode: '83141', postalCode: '83720', city: 'Trans-en-Provence', center: { latitude: 43.5025, longitude: 6.4869 }, population: 6905 },
-  { geoCode: '83058', postalCode: '83780', city: 'Flayosc', center: { latitude: 43.5441, longitude: 6.3577 }, population: 4673 },
-  { geoCode: '83121', postalCode: '83690', city: 'Salernes', center: { latitude: 43.5646, longitude: 6.2379 }, population: 4019 },
-  { geoCode: '83085', postalCode: '83920', city: 'La Motte', center: { latitude: 43.5091, longitude: 6.5506 }, population: 3071 },
-  { geoCode: '83056', postalCode: '83830', city: 'Figanières', center: { latitude: 43.5642, longitude: 6.4915 }, population: 2762 },
-  { geoCode: '83028', postalCode: '83830', city: 'Callas', center: { latitude: 43.5687, longitude: 6.5735 }, population: 2124 },
-  { geoCode: '83134', postalCode: '83460', city: 'Taradeau', center: { latitude: 43.4657, longitude: 6.4283 }, population: 1945 },
-  { geoCode: '83082', postalCode: '83131', city: 'Montferrat', center: { latitude: 43.6336, longitude: 6.4774 }, population: 1719 },
-  { geoCode: '83011', postalCode: '83830', city: 'Bargemon', center: { latitude: 43.6344, longitude: 6.5439 }, population: 1433 },
-  { geoCode: '83003', postalCode: '83111', city: 'Ampus', center: { latitude: 43.6218, longitude: 6.3683 }, population: 919 },
-  { geoCode: '83154', postalCode: '83510', city: 'Saint-Antonin-du-Var', center: { latitude: 43.5071, longitude: 6.2935 }, population: 870 },
-  { geoCode: '83128', postalCode: '83690', city: 'Sillans-la-Cascade', center: { latitude: 43.5650, longitude: 6.1549 }, population: 787 },
-  { geoCode: '83041', postalCode: '83830', city: 'Claviers', center: { latitude: 43.5998, longitude: 6.5845 }, population: 727 },
-  { geoCode: '83038', postalCode: '83300', city: 'Châteaudouble', center: { latitude: 43.6259, longitude: 6.4420 }, population: 476 },
-  { geoCode: '83044', postalCode: '83840', city: 'Comps-sur-Artuby', center: { latitude: 43.7075, longitude: 6.5060 }, population: 339 },
-  { geoCode: '83109', postalCode: '83840', city: 'La Roque-Esclapon', center: { latitude: 43.7210, longitude: 6.6479 }, population: 261 },
-  { geoCode: '83013', postalCode: '83840', city: 'La Bastide', center: { latitude: 43.7464, longitude: 6.6327 }, population: 227 },
-  { geoCode: '83010', postalCode: '83840', city: 'Bargème', center: { latitude: 43.7279, longitude: 6.5697 }, population: 207 },
+  { geoCode: '37261', postalCode: '37000', city: 'Tours', center: { latitude: 47.3943, longitude: 0.6949 }, population: 139259 },
+  { geoCode: '37122', postalCode: '37300', city: 'Joué-lès-Tours', center: { latitude: 47.3374, longitude: 0.6544 }, population: 38423 },
+  { geoCode: '37214', postalCode: '37540', city: 'Saint-Cyr-sur-Loire', center: { latitude: 47.4188, longitude: 0.6554 }, population: 17029 },
+  { geoCode: '37233', postalCode: '37700', city: 'Saint-Pierre-des-Corps', center: { latitude: 47.3876, longitude: 0.7334 }, population: 15898 },
+  { geoCode: '37208', postalCode: '37550', city: 'Saint-Avertin', center: { latitude: 47.3545, longitude: 0.7338 }, population: 14999 },
+  { geoCode: '37050', postalCode: '37170', city: 'Chambray-lès-Tours', center: { latitude: 47.3329, longitude: 0.7205 }, population: 12720 },
+  { geoCode: '37109', postalCode: '37230', city: 'Fondettes', center: { latitude: 47.4127, longitude: 0.6032 }, population: 10954 },
+  { geoCode: '37195', postalCode: '37520', city: 'La Riche', center: { latitude: 47.3815, longitude: 0.6371 }, population: 10487 },
+  { geoCode: '37018', postalCode: '37510', city: 'Ballan-Miré', center: { latitude: 47.3393, longitude: 0.5997 }, population: 8477 },
+  { geoCode: '37139', postalCode: '37230', city: 'Luynes', center: { latitude: 47.4123, longitude: 0.5364 }, population: 5062 },
+  { geoCode: '37172', postalCode: '37390', city: 'Notre-Dame-d\'Oé', center: { latitude: 47.4546, longitude: 0.7098 }, population: 4515 },
+  { geoCode: '37054', postalCode: '37390', city: 'Chanceaux-sur-Choisille', center: { latitude: 47.4758, longitude: 0.705 }, population: 3499 },
+  { geoCode: '37243', postalCode: '37510', city: 'Savonnières', center: { latitude: 47.3452, longitude: 0.5574 }, population: 3392 },
+  { geoCode: '37151', postalCode: '37390', city: 'La Membrolle-sur-Choisille', center: { latitude: 47.4452, longitude: 0.6268 }, population: 3290 },
+  { geoCode: '37203', postalCode: '37210', city: 'Rochecorbon', center: { latitude: 47.4338, longitude: 0.7605 }, population: 3219 },
+  { geoCode: '37179', postalCode: '37210', city: 'Parçay-Meslay', center: { latitude: 47.4547, longitude: 0.7394 }, population: 2574 },
+  { geoCode: '37152', postalCode: '37390', city: 'Mettray', center: { latitude: 47.4587, longitude: 0.6565 }, population: 2070 },
+  { geoCode: '37217', postalCode: '37230', city: 'Saint-Étienne-de-Chigny', center: { latitude: 47.3933, longitude: 0.5002 }, population: 1579 },
+  { geoCode: '37272', postalCode: '37510', city: 'Villandry', center: { latitude: 47.3321, longitude: 0.4898 }, population: 1143 },
+  { geoCode: '37099', postalCode: '37190', city: 'Druye', center: { latitude: 47.2976, longitude: 0.5354 }, population: 1024 },
+  { geoCode: '37219', postalCode: '37510', city: 'Saint-Genouph', center: { latitude: 47.3733, longitude: 0.5866 }, population: 1019 },
+  { geoCode: '37025', postalCode: '37510', city: 'Berthenay', center: { latitude: 47.3591, longitude: 0.5231 }, population: 707 },
 ];
 
 // Generic but plausible street names found in most French communes. Combined
@@ -103,7 +102,7 @@ let cache: DemoSeed | null = null;
 
 /**
  * Populate the in-memory MSW store (`data`) with a coherent and reproducible
- * data set covering the whole Dracénie Provence Verdon EPCI. Safe to call
+ * data set covering the whole Tours Métropole Val de Loire EPCI. Safe to call
  * multiple times — only seeds once.
  */
 export function seed(): DemoSeed {
@@ -118,9 +117,9 @@ export function seed(): DemoSeed {
   // --- Establishment -------------------------------------------------------
   const establishment: EstablishmentDTO = {
     ...genEstablishmentDTO(),
-    name: 'Test Dracénie Provence Verdon Agglomération',
-    shortName: 'DPVa',
-    siren: '248300493',
+    name: 'Test Tours Métropole Val de Loire',
+    shortName: 'TMVL',
+    siren: '243700754',
     geoCodes: EPCI_COMMUNES.map((commune) => commune.geoCode),
     available: true
   };
@@ -144,7 +143,7 @@ export function seed(): DemoSeed {
   data.owners.push(...owners);
 
   // Pick a commune weighted by population, so the distribution looks realistic
-  // (Draguignan gets the lion's share, the small communes only a few housings).
+  // (Tours gets the lion's share, the small communes only a few housings).
   const communeChoices = EPCI_COMMUNES.map((commune) => ({
     weight: commune.population,
     value: commune
