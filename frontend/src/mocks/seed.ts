@@ -30,11 +30,11 @@ export const DEMO_EMAIL = 'demo@zerologementvacant.beta.gouv.fr';
 
 /**
  * Number of housings to generate, spread across every commune of the EPCI
- * (weighted by population, so Tours concentrates most of them).
+ * (weighted by population, so Poitiers concentrates most of them).
  */
 const HOUSING_COUNT = 300;
 
-// Communes de Tours Métropole Val de Loire (SIREN 243700754) — source geo.api.gouv.fr.
+// Communes de la CU du Grand Poitiers (SIREN 200069854) — source geo.api.gouv.fr.
 // geoCode INSEE, code postal principal et coordonnées du centre (réels) pour la carte.
 const EPCI_COMMUNES: ReadonlyArray<{
   geoCode: string;
@@ -43,28 +43,46 @@ const EPCI_COMMUNES: ReadonlyArray<{
   center: { latitude: number; longitude: number };
   population: number;
 }> = [
-  { geoCode: '37261', postalCode: '37000', city: 'Tours', center: { latitude: 47.3943, longitude: 0.6949 }, population: 139259 },
-  { geoCode: '37122', postalCode: '37300', city: 'Joué-lès-Tours', center: { latitude: 47.3374, longitude: 0.6544 }, population: 38423 },
-  { geoCode: '37214', postalCode: '37540', city: 'Saint-Cyr-sur-Loire', center: { latitude: 47.4188, longitude: 0.6554 }, population: 17029 },
-  { geoCode: '37233', postalCode: '37700', city: 'Saint-Pierre-des-Corps', center: { latitude: 47.3876, longitude: 0.7334 }, population: 15898 },
-  { geoCode: '37208', postalCode: '37550', city: 'Saint-Avertin', center: { latitude: 47.3545, longitude: 0.7338 }, population: 14999 },
-  { geoCode: '37050', postalCode: '37170', city: 'Chambray-lès-Tours', center: { latitude: 47.3329, longitude: 0.7205 }, population: 12720 },
-  { geoCode: '37109', postalCode: '37230', city: 'Fondettes', center: { latitude: 47.4127, longitude: 0.6032 }, population: 10954 },
-  { geoCode: '37195', postalCode: '37520', city: 'La Riche', center: { latitude: 47.3815, longitude: 0.6371 }, population: 10487 },
-  { geoCode: '37018', postalCode: '37510', city: 'Ballan-Miré', center: { latitude: 47.3393, longitude: 0.5997 }, population: 8477 },
-  { geoCode: '37139', postalCode: '37230', city: 'Luynes', center: { latitude: 47.4123, longitude: 0.5364 }, population: 5062 },
-  { geoCode: '37172', postalCode: '37390', city: 'Notre-Dame-d\'Oé', center: { latitude: 47.4546, longitude: 0.7098 }, population: 4515 },
-  { geoCode: '37054', postalCode: '37390', city: 'Chanceaux-sur-Choisille', center: { latitude: 47.4758, longitude: 0.705 }, population: 3499 },
-  { geoCode: '37243', postalCode: '37510', city: 'Savonnières', center: { latitude: 47.3452, longitude: 0.5574 }, population: 3392 },
-  { geoCode: '37151', postalCode: '37390', city: 'La Membrolle-sur-Choisille', center: { latitude: 47.4452, longitude: 0.6268 }, population: 3290 },
-  { geoCode: '37203', postalCode: '37210', city: 'Rochecorbon', center: { latitude: 47.4338, longitude: 0.7605 }, population: 3219 },
-  { geoCode: '37179', postalCode: '37210', city: 'Parçay-Meslay', center: { latitude: 47.4547, longitude: 0.7394 }, population: 2574 },
-  { geoCode: '37152', postalCode: '37390', city: 'Mettray', center: { latitude: 47.4587, longitude: 0.6565 }, population: 2070 },
-  { geoCode: '37217', postalCode: '37230', city: 'Saint-Étienne-de-Chigny', center: { latitude: 47.3933, longitude: 0.5002 }, population: 1579 },
-  { geoCode: '37272', postalCode: '37510', city: 'Villandry', center: { latitude: 47.3321, longitude: 0.4898 }, population: 1143 },
-  { geoCode: '37099', postalCode: '37190', city: 'Druye', center: { latitude: 47.2976, longitude: 0.5354 }, population: 1024 },
-  { geoCode: '37219', postalCode: '37510', city: 'Saint-Genouph', center: { latitude: 47.3733, longitude: 0.5866 }, population: 1019 },
-  { geoCode: '37025', postalCode: '37510', city: 'Berthenay', center: { latitude: 47.3591, longitude: 0.5231 }, population: 707 },
+  { geoCode: '86194', postalCode: '86000', city: 'Poitiers', center: { latitude: 46.5846, longitude: 0.3715 }, population: 89916 },
+  { geoCode: '86041', postalCode: '86180', city: 'Buxerolles', center: { latitude: 46.6057, longitude: 0.367 }, population: 10289 },
+  { geoCode: '86115', postalCode: '86130', city: 'Jaunay-Marigny', center: { latitude: 46.7274, longitude: 0.3642 }, population: 7528 },
+  { geoCode: '86214', postalCode: '86280', city: 'Saint-Benoît', center: { latitude: 46.5484, longitude: 0.3561 }, population: 7375 },
+  { geoCode: '86070', postalCode: '86300', city: 'Chauvigny', center: { latitude: 46.5528, longitude: 0.6714 }, population: 7007 },
+  { geoCode: '86297', postalCode: '86580', city: 'Vouneuil-sous-Biard', center: { latitude: 46.5843, longitude: 0.2694 }, population: 6290 },
+  { geoCode: '86158', postalCode: '86440', city: 'Migné-Auxances', center: { latitude: 46.6307, longitude: 0.3008 }, population: 6285 },
+  { geoCode: '86157', postalCode: '86550', city: 'Mignaloux-Beauvoir', center: { latitude: 46.5488, longitude: 0.4112 }, population: 5229 },
+  { geoCode: '86062', postalCode: '86360', city: 'Chasseneuil-du-Poitou', center: { latitude: 46.6476, longitude: 0.356 }, population: 4743 },
+  { geoCode: '86222', postalCode: '86130', city: 'Saint-Georges-lès-Baillargeaux', center: { latitude: 46.6681, longitude: 0.4428 }, population: 4385 },
+  { geoCode: '86100', postalCode: '86240', city: 'Fontaine-le-Comte', center: { latitude: 46.5265, longitude: 0.2522 }, population: 3972 },
+  { geoCode: '86163', postalCode: '86360', city: 'Montamisé', center: { latitude: 46.6255, longitude: 0.4381 }, population: 3723 },
+  { geoCode: '86133', postalCode: '86240', city: 'Ligugé', center: { latitude: 46.5228, longitude: 0.29 }, population: 3444 },
+  { geoCode: '86095', postalCode: '86130', city: 'Dissay', center: { latitude: 46.698, longitude: 0.4452 }, population: 3101 },
+  { geoCode: '86019', postalCode: '86130', city: 'Beaumont Saint-Cyr', center: { latitude: 46.7256, longitude: 0.4556 }, population: 2908 },
+  { geoCode: '86226', postalCode: '86800', city: 'Saint-Julien-l\'Ars', center: { latitude: 46.5546, longitude: 0.4931 }, population: 2880 },
+  { geoCode: '86139', postalCode: '86600', city: 'Lusignan', center: { latitude: 46.4404, longitude: 0.1186 }, population: 2544 },
+  { geoCode: '86213', postalCode: '86480', city: 'Rouillé', center: { latitude: 46.422, longitude: 0.0282 }, population: 2533 },
+  { geoCode: '86261', postalCode: '86800', city: 'Sèvres-Anxaumont', center: { latitude: 46.5745, longitude: 0.4607 }, population: 2394 },
+  { geoCode: '86027', postalCode: '86580', city: 'Biard', center: { latitude: 46.5861, longitude: 0.2952 }, population: 1910 },
+  { geoCode: '86031', postalCode: '86300', city: 'Bonnes', center: { latitude: 46.6121, longitude: 0.6021 }, population: 1688 },
+  { geoCode: '86024', postalCode: '86190', city: 'Béruges', center: { latitude: 46.5497, longitude: 0.2081 }, population: 1528 },
+  { geoCode: '86045', postalCode: '86600', city: 'Celle-Lévescault', center: { latitude: 46.4065, longitude: 0.1744 }, population: 1383 },
+  { geoCode: '86244', postalCode: '86600', city: 'Saint-Sauvant', center: { latitude: 46.3527, longitude: 0.0774 }, population: 1293 },
+  { geoCode: '86114', postalCode: '86800', city: 'Jardres', center: { latitude: 46.5657, longitude: 0.5771 }, population: 1250 },
+  { geoCode: '86256', postalCode: '86800', city: 'Savigny-Lévescault', center: { latitude: 46.5266, longitude: 0.4759 }, population: 1240 },
+  { geoCode: '86124', postalCode: '86800', city: 'Lavoux', center: { latitude: 46.5961, longitude: 0.5288 }, population: 1192 },
+  { geoCode: '86083', postalCode: '86600', city: 'Coulombiers', center: { latitude: 46.489, longitude: 0.174 }, population: 1155 },
+  { geoCode: '86268', postalCode: '86800', city: 'Tercé', center: { latitude: 46.5136, longitude: 0.5582 }, population: 1135 },
+  { geoCode: '86028', postalCode: '86800', city: 'Bignoux', center: { latitude: 46.6044, longitude: 0.4597 }, population: 1087 },
+  { geoCode: '86088', postalCode: '86240', city: 'Croutelle', center: { latitude: 46.5415, longitude: 0.2944 }, population: 946 },
+  { geoCode: '86116', postalCode: '86600', city: 'Jazeneuil', center: { latitude: 46.4749, longitude: 0.0735 }, population: 793 },
+  { geoCode: '86198', postalCode: '86800', city: 'Pouillé', center: { latitude: 46.5419, longitude: 0.5795 }, population: 735 },
+  { geoCode: '86058', postalCode: '86210', city: 'La Chapelle-Moulière', center: { latitude: 46.6438, longitude: 0.5401 }, population: 723 },
+  { geoCode: '86202', postalCode: '86260', city: 'La Puye', center: { latitude: 46.6468, longitude: 0.7444 }, population: 608 },
+  { geoCode: '86135', postalCode: '86800', city: 'Liniers', center: { latitude: 46.6193, longitude: 0.5292 }, population: 591 },
+  { geoCode: '86253', postalCode: '86600', city: 'Sanxay', center: { latitude: 46.4963, longitude: -0.0057 }, population: 548 },
+  { geoCode: '86080', postalCode: '86600', city: 'Cloué', center: { latitude: 46.4464, longitude: 0.1666 }, population: 490 },
+  { geoCode: '86091', postalCode: '86600', city: 'Curzay-sur-Vonne', center: { latitude: 46.4902, longitude: 0.0428 }, population: 380 },
+  { geoCode: '86239', postalCode: '86300', city: 'Sainte-Radégonde', center: { latitude: 46.6176, longitude: 0.7041 }, population: 187 },
 ];
 
 // Generic but plausible street names found in most French communes. Combined
@@ -102,7 +120,7 @@ let cache: DemoSeed | null = null;
 
 /**
  * Populate the in-memory MSW store (`data`) with a coherent and reproducible
- * data set covering the whole Tours Métropole Val de Loire EPCI. Safe to call
+ * data set covering the whole CU du Grand Poitiers EPCI. Safe to call
  * multiple times — only seeds once.
  */
 export function seed(): DemoSeed {
@@ -117,9 +135,9 @@ export function seed(): DemoSeed {
   // --- Establishment -------------------------------------------------------
   const establishment: EstablishmentDTO = {
     ...genEstablishmentDTO(),
-    name: 'Test Tours Métropole Val de Loire',
-    shortName: 'TMVL',
-    siren: '243700754',
+    name: 'Test CU du Grand Poitiers',
+    shortName: 'Grand Poitiers',
+    siren: '200069854',
     geoCodes: EPCI_COMMUNES.map((commune) => commune.geoCode),
     available: true
   };
@@ -143,7 +161,7 @@ export function seed(): DemoSeed {
   data.owners.push(...owners);
 
   // Pick a commune weighted by population, so the distribution looks realistic
-  // (Tours gets the lion's share, the small communes only a few housings).
+  // (Poitiers gets the lion's share, the small communes only a few housings).
   const communeChoices = EPCI_COMMUNES.map((commune) => ({
     weight: commune.population,
     value: commune
