@@ -405,8 +405,9 @@ function HousingReviewView() {
                 </Grid>
 
                 <Grid container columnSpacing="1.5rem">
-                  {/* Center: owners, note, precisions */}
-                  <Grid size={{ xs: 12, md: 7 }}>
+                  {/* Left: owners, note, precisions — narrower, so the map
+                      (right) gets more room. */}
+                  <Grid size={{ xs: 12, md: 5 }}>
                     <Stack spacing="1.5rem" useFlexGap>
                       <ReviewOwnersSection housing={selectedHousing} />
 
@@ -427,8 +428,8 @@ function HousingReviewView() {
                     </Stack>
                   </Grid>
 
-                  {/* Right: map, DPE */}
-                  <Grid size={{ xs: 12, md: 5 }}>
+                  {/* Right: map, DPE — wider, since it now holds the map. */}
+                  <Grid size={{ xs: 12, md: 7 }}>
                     <Stack spacing="1.5rem" useFlexGap>
                       <Box>
                         <Map
